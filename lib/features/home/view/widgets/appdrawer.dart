@@ -10,6 +10,7 @@ class Appdrawer extends StatelessWidget {
     final isArabic = LocalizationService.getLang() == 'ar';
 
     return Drawer(
+      backgroundColor: Colors.white,
       child: SafeArea(
         child: Column(
           children: [

@@ -4,6 +4,8 @@ import '../../../../core/constants/app_colors.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:hijri/hijri_calendar.dart';
 
+import '../../../../localization_service.dart';
+
 class AddContributorDialog extends StatefulWidget {
   const AddContributorDialog({super.key});
 
@@ -158,7 +160,7 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.fromLTRB(28, 20, 20, 16),
-      decoration: const BoxDecoration(
+      decoration:  BoxDecoration(
         border: Border(bottom: BorderSide(color: Color(0xFFEEEEEE))),
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -166,7 +168,7 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'إضافة مساهم',
+            "Executive/Administrative Addition".tr(),
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
