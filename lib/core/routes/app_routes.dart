@@ -1,6 +1,8 @@
+import 'package:alhamd/features/Executives_Administrators/views/screens/Executives_Administrators_screen.dart';
 import 'package:alhamd/features/notification/view/notification.dart';
 import 'package:flutter/material.dart';
 
+import '../../features/Executives_Administrators/views/screens/Executives_Administrators_screen.dart';
 import '../../features/Organizations/view/Organizations.dart';
 import '../../features/forgetpassword/view/forgetPasswordScreen.dart';
 import '../../features/home/view/screens/homePage.dart';
@@ -20,6 +22,7 @@ class AppRoutes {
   static const String forgotPassword = '/forgotPassword';
   static const String otp = '/otp';
   static const String newPassword = '/newPassword';
+    static const String Administrators = '/ExecutivesAdministrators';
   static const String biometric ='/biometric';
   static const String home='/home';
   static const String service='/service';
@@ -37,7 +40,8 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const LoginPage());
       case rules:
         return MaterialPageRoute(builder: (_) => const RulesAndRegulations());
-
+      case Administrators:
+        return MaterialPageRoute(builder: (_) => const ExecutivesAdministrators());
       case forgotPassword:
         return MaterialPageRoute(builder: (_) => const ForgotPasswordPage());
       case otp:

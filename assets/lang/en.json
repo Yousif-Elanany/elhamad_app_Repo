@@ -140,5 +140,10 @@
   "massage_Type": "Message Type",
   "massage_content": "Message Content",
   "Policy_Request": "Policy Request",
-  "edit_Policy_request": "Edit Policy Request"
+  "edit_Policy_request": "Edit Policy Request",
+  "Executives/Administrators": "Executives/Administrators",
+  "Executive/Administrative Addition": "Executive/Administrative Addition",
+  "ID number": "ID Number",
+  "Activity": "Activity",
+  "procedures": "Procedures"
 }

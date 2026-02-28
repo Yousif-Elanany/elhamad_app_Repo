@@ -13,7 +13,7 @@ class ServicesPage extends StatelessWidget {
       backgroundColor: const Color(0xFFF9FAFB),
       drawer: const Appdrawer(),
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
         title: Align(
           alignment: Alignment.center,
@@ -35,9 +35,22 @@ class ServicesPage extends StatelessWidget {
                 }),
                 _buildServiceCard("board_of_directors".tr(), Icons.groups_outlined, 8, () {}),
                 _buildServiceCard("committees".tr(), Icons.folder_open_outlined, 15, () {}),
+                _buildServiceCard("committees".tr(), Icons.folder_open_outlined, 15, () {}),
+                _buildServiceCard("Executives/Administrators".tr(), Icons.folder_open_outlined, 15, () {
+                  Navigator.pushNamed(context, "/ExecutivesAdministrators");
+
+
+                }),
+
                 _buildServiceCard("decisions".tr(), Icons.description_outlined, 24, () {}),
                 _buildServiceCard("contracts".tr(), Icons.assignment_outlined, 6, () {}),
                 _buildServiceCard("messages_support".tr(), Icons.chat_bubble_outline, 10, () {}),
+                _buildServiceCard("policies_regulations".tr(), Icons.book, 3, () {
+
+                  Navigator.pushNamed(context, "/Rule");
+
+
+                }),
               ]),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
@@ -51,18 +64,13 @@ class ServicesPage extends StatelessWidget {
               child: SizedBox(height: 16),
             ),
 
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 180,
-                width: double.infinity,
-                child: _buildServiceCard("policies_regulations".tr(), Icons.book, 3, () {
-
-                  Navigator.pushNamed(context, "/Rule");
-
-
-                }),
-              ),
-            ),
+            // SliverToBoxAdapter(
+            //   child: SizedBox(
+            //     height: 180,
+            //     width: double.infinity,
+            //     child:
+            //   ),
+            // ),
           ],
         ),
       ),
@@ -86,10 +94,12 @@ class ServicesPage extends StatelessWidget {
                 children: [
                   Icon(icon, size: 40, color: Colors.grey[600]),
                   const SizedBox(height: 12),
-                  Text(
-                    title,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
+                  FittedBox(
+                    child: Text(
+                      title,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ],
               ),

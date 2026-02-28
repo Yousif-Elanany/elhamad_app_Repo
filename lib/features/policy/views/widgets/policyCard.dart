@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/ActionIconButton.dart';
 import '../../../../core/widgets/chatDialog.dart';
+import '../../../../core/widgets/deleteDialog.dart';
 import '../../../home/models/complainModel.dart';
 import 'makePolicyRequestDialog.dart';
 
@@ -121,7 +122,15 @@ class PolicyCard extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: ActionIconButton(
-                    onTap: () => ComplaintDetailsDialog.show(context),
+                    onTap: () => showDialog(
+                      context: context,
+                      builder: (_) => ConfirmDeleteDialog(
+                        onConfirm: () {
+                          Navigator.pop(context);
+                          // منطق الحذف هنا
+                        },
+                      ),
+                    ),
                     icon: Icons.delete,
                     iconColor: Colors.red,
                     backgroundColor: Colors.white,

@@ -4,6 +4,7 @@
   "password_hint": "********",
   "remember_me": "تذكرني",
   "forgot_password?": "نسيت كلمة المرور؟",
+  "name": "الاسم",
   "change_lang": "تغيير اللغة",
   "username_label": "اسم المستخدم",
   "password_label": "كلمة المرور",
@@ -119,6 +120,7 @@
   "expiry_date": "تاريخ نهاية دورة المجلس",
   "email": "البريد الإلكتروني",
   "enter_email": "أدخل البريد",
+  "phone_Num": "رقم الجوال",
   "notes": "ملاحظات",
   "test_text": "نص تجريبي",
   "next": "التالي",
@@ -141,7 +143,13 @@
   "massage_Type": "نوع الرسالة",
   "massage_content": "نص الرسالة",
   "Policy_Request": "طلب سياسة",
-  "edit_Policy_request": "تعديل طلب سياسة"
+  "edit_Policy_request": "تعديل طلب سياسة",
+  "Executives/Administrators": "التنفيذيين / الاداريين" ,
+  "Executive/Administrative Addition": "إضافة تنفيذي / إداري",
+  "ID number": "رقم الهوية",
+  "Activity": "النشاط",
+  "procedures": "الإجراءات"
+
 
 
 }

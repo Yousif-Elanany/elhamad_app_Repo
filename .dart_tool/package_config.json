@@ -302,6 +302,12 @@
       "languageVersion": "3.4"
     },
     {
+      "name": "hijri",
+      "rootUri": "file:///C:/Users/Yousi/AppData/Local/Pub/Cache/hosted/pub.dev/hijri-3.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "hive",
       "rootUri": "file:///C:/Users/Yousi/AppData/Local/Pub/Cache/hosted/pub.dev/hive-2.2.3",
       "packageUri": "lib/",
