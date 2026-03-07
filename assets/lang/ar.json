@@ -5,6 +5,7 @@
   "remember_me": "تذكرني",
   "forgot_password?": "نسيت كلمة المرور؟",
   "name": "الاسم",
+  "save": "حفظ",
   "change_lang": "تغيير اللغة",
   "username_label": "اسم المستخدم",
   "password_label": "كلمة المرور",
@@ -18,6 +19,8 @@
   "otp_desc": "تم إرسال رمز التحقق إلى رقمك المسجل",
   "resend": "إعادة إرسال",
   "confirm": "تأكيد",
+  "phone": " الجوال",
+  "Sms" :  " رسالة نصية",
   "new_password": "كلمة المرور الجديدة",
   "new_password_desc": "أدخل كلمة المرور الجديدة أدناه",
   "new_password_hint": "ادخل كلمة المرور الجديدة",
@@ -148,7 +151,52 @@
   "Executive/Administrative Addition": "إضافة تنفيذي / إداري",
   "ID number": "رقم الهوية",
   "Activity": "النشاط",
-  "procedures": "الإجراءات"
+  "procedures": "الإجراءات",
+  "Massages": "الرسائل",
+  "Send Message": "إرسال  رسالة",
+  "Sent To": "مرسلة الي",
+  "SendBy": "مرسلة عبر",
+  "SendStatus": "حالة الإرسال",
+  "Numberofunitsconsumed": "عدد الوحدات المستهلكة",
+  "Tasks": "المهام",
+  "add_Task": "إضافة مهمة",
+  "TaskDetails":  "تفاصيل المهمة",
+  "TaskType": "نوع المهمة",
+  "SECRET": "سري",
+  "Creation date": "تاريخ الإنشاء",
+  "Date of creation (Hijri)": "تاريخ الإنشاء (هجري)",
+  "due date": "تاريخ الاستحقاق",
+  "Due date (Hijri)": "تاريخ الاستحقاق (هجري)",
+  "ReviewTask": "مراجعة المهمة",
+  "Project name": "اسم المشروع",
+  "Assignments": " التكليفات",
+  "Priority": "الأولوية",
+  "Policy_Requests": "طلبات السياسات",
+  "Task title": "عنوان المهمة",
+  "Policy Name": "اسم السياسة",
+  "Select Template":  "اختر قالب",
+  "add_policy": "إضافة سياسة",
+  "Policies": "السياسات",
+  "Details": "التفاصيل",
+  "login_with_password": "تسجيل الدخول بكلمة المرور",
+  "login_with_otp": "تسجيل الدخول برمز التحقق",
+
+  "national_id_label": "رقم الهوية *",
+  "national_id_hint": "أدخل رقم الهوية الوطنية",
+  "otp_label": "رمز التحقق *",
+  "otp_hint": "أدخل رمز التحقق",
+  "verify_and_login": "تحقق وتسجيل الدخول",
+  "change_national_id": "تغيير رقم الهوية",
+  "documentation":  "التوثيق",
+  "Documentation_requests": "طلبات التوثيق",
+  "documentation_request": "طلب توثيق",
+  "requestTitle": "عنوان الطلب",
+  "RequestType": "نوع الطلب"
+
+
+
+
+
 
 
 

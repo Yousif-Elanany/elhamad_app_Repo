@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../localization_service.dart';
-import '../../home/view/widgets/appdrawer.dart';
+import '../../drawer/appdrawer.dart';
 // تأكد من المسار الصحيح للـ LocalizationService
 // import '../../../core/localization/localization_service.dart';
 

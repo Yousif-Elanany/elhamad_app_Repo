@@ -16,19 +16,22 @@ class MeetingsPage extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        leading: IconButton(
-          icon: Icon(
-            // التعديل هنا: في العربي السهم يشير لليمين، في الإنجليزي يشير لليسار
-            isAr ? Icons.arrow_forward_ios : Icons.arrow_back_ios,
-            color: Colors.black,
-            size: 20,
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: SizedBox(),
         title: Text(
           "meetings".tr(),
           style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              // التعديل هنا: في العربي السهم يشير لليمين، في الإنجليزي يشير لليسار
+              isAr ? Icons.arrow_forward_ios : Icons.arrow_back_ios,
+              color: Colors.black,
+              size: 20,
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
       ),      body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

@@ -4,6 +4,7 @@ import '../../../../core/constants/app_colors.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:hijri/hijri_calendar.dart';
 
+import '../../../../core/widgets/TextForm.dart';
 import '../../../../localization_service.dart';
 
 class AddContributorDialog extends StatefulWidget {
@@ -221,7 +222,7 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
         Row(
           children: [
             Expanded(
-              child: _buildTextField(
+              child: buildTextField(
                 controller: _nameArController,
                 label: 'الاسم (باللغة العربية)',
                 hint: 'أدخل الاسم بالعربية',
@@ -232,7 +233,7 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: _buildTextField(
+              child: buildTextField(
                 controller: _nameEnController,
                 label: 'الاسم (باللغة الإنجليزية)',
                 hint: 'أدخل الاسم بالإنجليزية',
@@ -247,7 +248,7 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
         Row(
           children: [
             Expanded(
-              child: _buildTextField(
+              child: buildTextField(
                 controller: _idController,
                 label: 'رقم الهوية',
                 hint: 'أدخل رقم الهوية الوطنية',
@@ -288,7 +289,7 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: _buildTextField(
+              child: buildTextField(
                 controller: _birthdateController,
                 label: 'تاريخ الميلاد (بالتقويم الهجري)',
                 hint: 'اختر التاريخ الهجري',
@@ -377,7 +378,7 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
     return Row(
       children: [
         Expanded(
-          child: _buildTextField(
+          child: buildTextField(
             controller: _phoneController,
             label: 'رقم الهاتف',
             hint: 'أدخل رقم الهاتف',
@@ -389,7 +390,7 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
         ),
         const SizedBox(width: 16),
         Expanded(
-          child: _buildTextField(
+          child: buildTextField(
             controller: _emailController,
             label: 'البريد الإلكتروني',
             hint: 'أدخل البريد الإلكتروني',
@@ -413,7 +414,7 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildLabel('النشاط', required: true),
+            buildLabel('النشاط', required: true),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -441,7 +442,7 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildLabel('يمكنه رؤية الملفات الخاصة؟', required: true),
+              buildLabel('يمكنه رؤية الملفات الخاصة؟', required: true),
               const SizedBox(height: 8),
               Row(
                 children: [
@@ -565,87 +566,8 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
 
   // ── Reusable Widgets ─────────────────────────
 
-  Widget _buildLabel(String text, {bool required = false}) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        FittedBox(
-          child: Text(
-            text,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primaryOlive,
-            ),
-          ),
-        ),
-        if (required) ...[
-          const SizedBox(width: 4),
-          const Text('*', style: TextStyle(color: Colors.red, fontSize: 14)),
-        ],
-      ],
-    );
-  }
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    bool required = false,
-    TextInputType keyboardType = TextInputType.text,
-    Widget? suffixIcon,
-    String? Function(String?)? validator,
-    bool readOnly = false,
-    Future<dynamic> Function()? onTap,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildLabel(label, required: required),
-        const SizedBox(height: 6),
-        TextFormField(
-          controller: controller,
-          keyboardType: keyboardType,
-          onTap: onTap,
-          validator: validator,
-          textAlign: TextAlign.right,
-          readOnly: readOnly,
-          style: const TextStyle(fontSize: 12),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(color: Colors.grey[400], fontSize: 12),
-            suffixIcon: suffixIcon,
-            filled: true,
-            fillColor: const Color(0xFFFAFAFA),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 0,
-              vertical: 11,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: _borderColor),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: _borderColor, width: 1.5),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: _green, width: 1.5),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Colors.red, width: 1.5),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Colors.red, width: 1.5),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+
 
   Widget _buildDropdown({
     required String label,
@@ -657,7 +579,7 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildLabel(label, required: true),
+        buildLabel(label, required: true),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
           value: value,
@@ -710,7 +632,7 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildLabel(label, required: true),
+        buildLabel(label, required: true),
         const SizedBox(height: 6),
         GestureDetector(
           onTap: onTap,

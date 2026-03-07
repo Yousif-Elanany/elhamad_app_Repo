@@ -1,11 +1,15 @@
 import 'package:alhamd/features/Executives_Administrators/views/screens/Executives_Administrators_screen.dart';
+import 'package:alhamd/features/Tasks/screen/TasksScreen.dart';
 import 'package:alhamd/features/notification/view/notification.dart';
 import 'package:flutter/material.dart';
 
+import '../../features/Documantation/view/screens/documantationScreen.dart';
 import '../../features/Executives_Administrators/views/screens/Executives_Administrators_screen.dart';
 import '../../features/Organizations/view/Organizations.dart';
 import '../../features/forgetpassword/view/forgetPasswordScreen.dart';
 import '../../features/home/view/screens/homePage.dart';
+import '../../features/managments/views/screens/ManagementScreen.dart';
+import '../../features/massages/view/screens/MassageScreen.dart';
 import '../../features/policy/views/screens/RulesAndRegulations.dart';
 import '../../features/setting/view/settings.dart';
 import '../../features/login/view/loginscreen.dart';
@@ -22,17 +26,22 @@ class AppRoutes {
   static const String forgotPassword = '/forgotPassword';
   static const String otp = '/otp';
   static const String newPassword = '/newPassword';
-    static const String Administrators = '/ExecutivesAdministrators';
-  static const String biometric ='/biometric';
-  static const String home='/home';
-  static const String service='/service';
-  static const String meeting='/meeting';
-  static const String notification='/notification';
-  static const String meetingDetailed='/detailed';
-  static const String organizations="/organizations";
-  static const String contactus="/Contactus";
-  static const String settingspage="/settings";
-  static const String rules="/Rule";
+  static const String Administrators = '/ExecutivesAdministrators';
+  static const String biometric = '/biometric';
+  static const String home = '/home';
+  static const String service = '/service';
+  static const String meeting = '/meeting';
+  static const String notification = '/notification';
+  static const String meetingDetailed = '/detailed';
+  static const String organizations = "/organizations";
+  static const String contactus = "/Contactus";
+  static const String settingspage = "/settings";
+  static const String rules = "/Rule";
+  static const String Massage = "/Massage";
+  static const String Tasks = "/Tasks";
+  static const String Documantation = "/Docu";
+  static const String Management="/Management";
+
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -40,8 +49,16 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const LoginPage());
       case rules:
         return MaterialPageRoute(builder: (_) => const RulesAndRegulations());
+      case Documantation:
+        return MaterialPageRoute(builder: (_) => const DocumantationScreen());
+      case Massage:
+        return MaterialPageRoute(builder: (_) => const MassageScreen());
+      case Tasks:
+        return MaterialPageRoute(builder: (_) => const TasksScreen());
       case Administrators:
-        return MaterialPageRoute(builder: (_) => const ExecutivesAdministrators());
+        return MaterialPageRoute(
+          builder: (_) => const ExecutivesAdministrators(),
+        );
       case forgotPassword:
         return MaterialPageRoute(builder: (_) => const ForgotPasswordPage());
       case otp:
@@ -49,23 +66,25 @@ class AppRoutes {
       case newPassword:
         return MaterialPageRoute(builder: (_) => const NewPasswordPage());
       case biometric:
-        return MaterialPageRoute(builder: (context) => BiometricPage(),);
+        return MaterialPageRoute(builder: (context) => BiometricPage());
       case home:
-        return MaterialPageRoute(builder: (context) => CompanyHomePage(),);
+        return MaterialPageRoute(builder: (context) => CompanyHomePage());
       case service:
-        return MaterialPageRoute(builder: (context) => ServicesPage(),);
+        return MaterialPageRoute(builder: (context) => ServicesPage());
       case meeting:
-        return MaterialPageRoute(builder: (context) => MeetingsPage(),);
+        return MaterialPageRoute(builder: (context) => MeetingsPage());
       case notification:
-        return MaterialPageRoute(builder: (context) => NotificationsPage(),);
+        return MaterialPageRoute(builder: (context) => NotificationsPage());
       case meetingDetailed:
-        return MaterialPageRoute(builder: (context) => MeetingDetailsPage(),);
+        return MaterialPageRoute(builder: (context) => MeetingDetailsPage());
       case organizations:
-        return MaterialPageRoute(builder: (context) => Organizations(),);
+        return MaterialPageRoute(builder: (context) => Organizations());
       case contactus:
-        return MaterialPageRoute(builder: (context) => Contactus(),);
+        return MaterialPageRoute(builder: (context) => Contactus());
+      case Management:
+        return MaterialPageRoute(builder: (context) => Managementscreen(),);
       case settingspage:
-        return MaterialPageRoute(builder: (context) => Settings(),);
+        return MaterialPageRoute(builder: (context) => Settings());
 
       default:
         return MaterialPageRoute(

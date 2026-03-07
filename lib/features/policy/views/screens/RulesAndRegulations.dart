@@ -4,13 +4,14 @@ import '../../../../localization_service.dart';
 import '../../../Organizations/widgets/ComplainDetail.dart';
 import '../../../compaines/views/widgets/addComplain.dart';
 import '../../../home/models/complainModel.dart';
-import '../../../home/view/widgets/appdrawer.dart';
+import '../../../drawer/appdrawer.dart';
+import '../widgets/AddPolicyDialog.dart';
+import '../widgets/add_policyCard.dart';
 import '../widgets/makePolicyRequestDialog.dart';
 import '../widgets/policyCard.dart';
 
 // تأكد من استيراد الـ extension الخاص بك
 // import 'path_to_localization/localization_service.dart';
-
 class RulesAndRegulations extends StatefulWidget {
   const RulesAndRegulations({super.key});
 
@@ -18,7 +19,9 @@ class RulesAndRegulations extends StatefulWidget {
   State<RulesAndRegulations> createState() => _RulesAndRegulationsState();
 }
 
-class _RulesAndRegulationsState extends State<RulesAndRegulations> {
+class _RulesAndRegulationsState extends State<RulesAndRegulations>
+    with SingleTickerProviderStateMixin {
+
   final List<ComplaintModel> complaints = [
     ComplaintModel(
       id: 1,
@@ -40,38 +43,45 @@ class _RulesAndRegulationsState extends State<RulesAndRegulations> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      // الـ Drawer هيظهر تلقائياً جهة اليمين في العربي واليسار في الإنجليزي
-      drawer: const Appdrawer(),
-      appBar: AppBar(
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
         backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-        // تجنب استخدام Center widget داخل العنوان واستخدم الخاصية الجاهزة
-        centerTitle: true,
-        title: Text(
-          "policies_regulations".tr(),
-          style: const TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
+        drawer: const Appdrawer(),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          iconTheme: const IconThemeData(color: Colors.black),
+          centerTitle: true,
+          title: Text(
+            "policies_regulations".tr(),
+            style: const TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+          bottom: TabBar(
+            labelColor: AppColors.primaryOlive,
+            unselectedLabelColor: Colors.grey,
+            indicatorColor: AppColors.primaryOlive,
+            tabs: [
+              Tab(text: "Policy_Requests".tr()),
+              Tab(text: "Policies".tr()),
+            ],
           ),
         ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
+        body: TabBarView(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+            /// 🔹 التاب الأول (طلبات السياسات)
+            Column(
               children: [
-                Expanded(
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
                   child: ElevatedButton.icon(
                     onPressed: () {
                       makePolicyRequestDialog.show(context);
-
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryOlive,
@@ -79,11 +89,8 @@ class _RulesAndRegulationsState extends State<RulesAndRegulations> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    icon: const Icon(
-                      Icons.add,
-                      color: Colors.white,
-                      size: 18,
-                    ),
+                    icon: const Icon(Icons.add,
+                        color: Colors.white, size: 18),
                     label: Text(
                       "Policy_Request".tr(),
                       style: const TextStyle(
@@ -91,61 +98,92 @@ class _RulesAndRegulationsState extends State<RulesAndRegulations> {
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
+                  ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(12),
+                    itemCount: complaints.length,
+                    itemBuilder: (context, index) {
+                      final item = complaints[index];
+
+                      return Padding(
+                        padding:
+                        const EdgeInsets.only(bottom: 12),
+                        child: PolicyCard(
+                          model: item,
+                          index: item.id,
+                          complainant: item.complainant,
+                          content: item.content,
+                          date: item.date,
+                          type: item.type,
+                          status: item.status,
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],
             ),
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.all(12),
-                itemCount: complaints.length,
-                itemBuilder: (context, index) {
-                  final item = complaints[index];
 
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: PolicyCard(
-                      model: ComplaintModel(
-                        id: item.id,
-                        complainant: item.complainant,
-                        content: item.content,
-                        date: item.date,
-                        type: item.type,
-                        status: item.status,
+            /// 🔹 التاب الثاني (السياسات)
+            Center(
+              child:        Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        AddPolicyRequestDialog.show(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryOlive,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
-                      index: item.id,
-                      complainant: item.complainant,
-                      content: item.content,
-                      date: item.date,
-                      type: item.type,
-                      status: item.status,
+                      icon: const Icon(Icons.add,
+                          color: Colors.white, size: 18),
+                      label: Text(
+                        "add_policy".tr(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
-                  );
-                },
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.all(12),
+                      itemCount: complaints.length,
+                      itemBuilder: (context, index) {
+                        final item = complaints[index];
+
+                        return Padding(
+                          padding:
+                          const EdgeInsets.only(bottom: 12),
+                          child: AddPolicyCard(
+                            model: item,
+                            index: item.id,
+                            complainant: item.complainant,
+                            content: item.content,
+                            date: item.date,
+                            type: item.type,
+                            status: item.status,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
-            // Icon(
-            //   Icons.contact_support_outlined,
-            //   size: 80,
-            //   color: Colors.grey.withOpacity(0.5),
-            // ),
-            // const SizedBox(height: 16),
-            // Text(
-            //   "no_contacts_available".tr(),
-            //   style: TextStyle(
-            //     color: Colors.grey.shade600,
-            //     fontSize: 16,
-            //     fontWeight: FontWeight.w500,
-            //   ),
-            // ),
           ],
         ),
       ),
     );
   }
-
-
 }

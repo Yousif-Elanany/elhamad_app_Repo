@@ -15,7 +15,7 @@ class CustomTextField extends StatefulWidget {
     this.isPassword = false,
     this.keyboardType = TextInputType.text,
     this.validator,
-    this.textAlign, // ✅ جديد
+    this.textAlign,  bool readOnly =false, // ✅ جديد
   });
 
   @override

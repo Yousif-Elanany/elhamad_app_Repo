@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../home/view/widgets/appdrawer.dart';
+import '../../drawer/appdrawer.dart';
 import '../../../localization_service.dart';
 
 class ServicesPage extends StatelessWidget {
@@ -33,9 +33,16 @@ class ServicesPage extends StatelessWidget {
                 _buildServiceCard("associations".tr(), Icons.business_outlined, 12, () {
                   Navigator.pushNamed(context, "/organizations");
                 }),
-                _buildServiceCard("board_of_directors".tr(), Icons.groups_outlined, 8, () {}),
+                _buildServiceCard("board_of_directors".tr(), Icons.groups_outlined, 8, () {
+                  Navigator.pushNamed(context, "/Management");
+
+
+                }),
                 _buildServiceCard("committees".tr(), Icons.folder_open_outlined, 15, () {}),
-                _buildServiceCard("committees".tr(), Icons.folder_open_outlined, 15, () {}),
+                _buildServiceCard("Tasks".tr(), Icons.folder_open_outlined, 15, () {
+                  Navigator.pushNamed(context, "/Tasks");
+
+                }),
                 _buildServiceCard("Executives/Administrators".tr(), Icons.folder_open_outlined, 15, () {
                   Navigator.pushNamed(context, "/ExecutivesAdministrators");
 
@@ -43,8 +50,15 @@ class ServicesPage extends StatelessWidget {
                 }),
 
                 _buildServiceCard("decisions".tr(), Icons.description_outlined, 24, () {}),
-                _buildServiceCard("contracts".tr(), Icons.assignment_outlined, 6, () {}),
-                _buildServiceCard("messages_support".tr(), Icons.chat_bubble_outline, 10, () {}),
+                _buildServiceCard("documentation".tr(), Icons.assignment_outlined, 6, () {
+
+                  Navigator.pushNamed(context, "/Docu");
+                }),
+                _buildServiceCard("messages_support".tr(), Icons.chat_bubble_outline, 10, () {
+                  Navigator.pushNamed(context, "/Massage");
+
+
+                }),
                 _buildServiceCard("policies_regulations".tr(), Icons.book, 3, () {
 
                   Navigator.pushNamed(context, "/Rule");

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../../core/network/cache_helper.dart';
-import '../../../../localization_service.dart';
+import '../../core/network/cache_helper.dart';
+import '../../localization_service.dart';
 
 class Appdrawer extends StatelessWidget {
   const Appdrawer({super.key});
