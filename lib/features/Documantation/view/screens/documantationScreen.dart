@@ -1,0 +1,192 @@
+import 'package:flutter/material.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../localization_service.dart';
+import '../../../Organizations/widgets/ComplainDetail.dart';
+import '../../../compaines/views/widgets/addComplain.dart';
+import '../../../home/models/complainModel.dart';
+import '../../../drawer/appdrawer.dart';
+import '../../../policy/views/widgets/AddPolicyDialog.dart';
+import '../../../policy/views/widgets/add_policyCard.dart';
+import '../../../policy/views/widgets/makePolicyRequestDialog.dart';
+import '../../../policy/views/widgets/policyCard.dart';
+import '../widgets/documntation_request_card.dart';
+import '../widgets/requestDialog.dart';
+
+
+// تأكد من استيراد الـ extension الخاص بك
+// import 'path_to_localization/localization_service.dart';
+class DocumantationScreen extends StatefulWidget {
+  const DocumantationScreen({super.key});
+
+  @override
+  State<DocumantationScreen> createState() => _DocumantationScreenState();
+}
+
+class _DocumantationScreenState extends State<DocumantationScreen>
+    with SingleTickerProviderStateMixin {
+
+  final List<ComplaintModel> complaints = [
+    ComplaintModel(
+      id: 1,
+      complainant: "مسال مول",
+      content: "ssssssssssss",
+      date: "21 فبراير 2026, 02:55 م",
+      type: "شكوى",
+      status: "جديد",
+    ),
+    ComplaintModel(
+      id: 2,
+      complainant: "أحمد علي",
+      content: "تأخير في الخدمة",
+      date: "20 فبراير 2026, 11:30 ص",
+      type: "بلاغ",
+      status: "جديد",
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        drawer: const Appdrawer(),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          iconTheme: const IconThemeData(color: Colors.black),
+          centerTitle: true,
+          title: Text(
+            "documentation".tr(),
+            style: const TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+          bottom: TabBar(
+            labelColor: AppColors.primaryOlive,
+            unselectedLabelColor: Colors.grey,
+            indicatorColor: AppColors.primaryOlive,
+            tabs: [
+              Tab(text: "Documentation_requests".tr()),
+              Tab(text: "documentation".tr()),
+            ],
+          ),
+        ),
+        body: TabBarView(
+          children: [
+
+            /// 🔹 التاب الأول (طلبات السياسات)
+            Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      showDocumentRequestDialog(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryOlive,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    icon: const Icon(Icons.add,
+                        color: Colors.white, size: 18),
+                    label: Text(
+                      "Documentation_requests".tr(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(12),
+                    itemCount: complaints.length,
+                    itemBuilder: (context, index) {
+                      final item = complaints[index];
+
+                      return Padding(
+                        padding:
+                        const EdgeInsets.only(bottom: 12),
+                        child: documatationRequestCard(
+                          model: item,
+                          index: item.id,
+                          complainant: item.complainant,
+                          content: item.content,
+                          date: item.date,
+                          type: item.type,
+                          status: item.status,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+
+            /// 🔹 التاب الثاني (السياسات)
+            Center(
+              child:        Column(
+                children: [
+                  // Padding(
+                  //   padding: const EdgeInsets.all(8.0),
+                  //   child: ElevatedButton.icon(
+                  //     onPressed: () {
+                  //       AddPolicyRequestDialog.show(context);
+                  //     },
+                  //     style: ElevatedButton.styleFrom(
+                  //       backgroundColor: AppColors.primaryOlive,
+                  //       shape: RoundedRectangleBorder(
+                  //         borderRadius: BorderRadius.circular(8),
+                  //       ),
+                  //     ),
+                  //     icon: const Icon(Icons.add,
+                  //         color: Colors.white, size: 18),
+                  //     label: Text(
+                  //       "add_policy".tr(),
+                  //       style: const TextStyle(
+                  //         color: Colors.white,
+                  //         fontWeight: FontWeight.bold,
+                  //         fontSize: 12,
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
+                  Expanded(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.all(12),
+                      itemCount: complaints.length,
+                      itemBuilder: (context, index) {
+                        final item = complaints[index];
+
+                        return Padding(
+                          padding:
+                          const EdgeInsets.only(bottom: 12),
+                          child: AddPolicyCard(
+                            model: item,
+                            index: item.id,
+                            complainant: item.complainant,
+                            content: item.content,
+                            date: item.date,
+                            type: item.type,
+                            status: item.status,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
