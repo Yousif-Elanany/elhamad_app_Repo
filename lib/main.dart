@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import 'core/network/DioService.dart';
 import 'core/network/cache_helper.dart';
 import 'features/Organizations/model/organization_model.dart';
 import 'core/routes/app_routes.dart';
 import 'features/login/view/loginscreen.dart';
 import 'localization_service.dart';
+
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
@@ -14,6 +16,17 @@ void main() async {
   await Hive.initFlutter();
   await CacheHelper.init();
   await LocalizationService.init();
+  await DioHelper.init(
+    getAccessToken: () async => await CacheHelper.getData('token') ?? "",
+    onLogout: () async {
+      await CacheHelper.removeData('token');
+
+      navigatorKey.currentState?.pushNamedAndRemoveUntil(
+        AppRoutes.login,
+        (route) => false,
+      );
+    },
+  );
   Hive.registerAdapter(OrganizationAdapter());
 
   await Hive.openBox<Organization>('organizations');

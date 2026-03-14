@@ -52,6 +52,14 @@ class _RulesAndRegulationsState extends State<RulesAndRegulations>
           backgroundColor: Colors.white,
           elevation: 0,
           iconTheme: const IconThemeData(color: Colors.black),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.arrow_forward),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+          ],
           centerTitle: true,
           title: Text(
             "policies_regulations".tr(),

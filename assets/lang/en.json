@@ -184,8 +184,20 @@
   "verify_and_login": "Verify & Login",
   "change_national_id": "Change National ID",
   "documentation":  "Documentation",
+  "Active": "Active",
   "Documentation_requests": "Documentation Requests",
   "requestTitle": "Request Title",
-  "RequestType": "Request Type"
+  "RequestType": "Request Type",
+  "Committees": "Committees",
+  "employees":   "Employees",
+  "add_employee": "Add Employee",
+  "employee_name": "Employee Name",
+  "employee_id": "Employee ID",
+  "employee_email": "Employee Email",
+  "employee_phone": "Employee Phone",
+  "employee_position": "Employee Position",
+  "employee_department": "Employee Department",
+  "employee_status": "Employee Status",
+  "add_Permissions": "Add Permissions"
 
 }

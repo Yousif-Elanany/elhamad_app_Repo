@@ -15,7 +15,7 @@ class DioHelper {
   /// تهيئة DioHelper
   static Future<void> init({
     required Future<String?> Function() getAccessToken,
-    required Future<void> Function() onLogout,
+    required Future<dynamic> Function() onLogout,
   }) async {
     _getAccessToken = getAccessToken;
     _onLogout = onLogout;

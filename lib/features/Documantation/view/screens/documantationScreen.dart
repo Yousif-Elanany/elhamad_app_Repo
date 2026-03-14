@@ -55,6 +55,14 @@ class _DocumantationScreenState extends State<DocumantationScreen>
           backgroundColor: Colors.white,
           elevation: 0,
           iconTheme: const IconThemeData(color: Colors.black),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.arrow_forward),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+          ],
           centerTitle: true,
           title: Text(
             "documentation".tr(),

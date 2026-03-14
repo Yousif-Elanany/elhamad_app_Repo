@@ -151,6 +151,7 @@
   "Executive/Administrative Addition": "إضافة تنفيذي / إداري",
   "ID number": "رقم الهوية",
   "Activity": "النشاط",
+  "Active": "نشط",
   "procedures": "الإجراءات",
   "Massages": "الرسائل",
   "Send Message": "إرسال  رسالة",
@@ -191,7 +192,19 @@
   "Documentation_requests": "طلبات التوثيق",
   "documentation_request": "طلب توثيق",
   "requestTitle": "عنوان الطلب",
-  "RequestType": "نوع الطلب"
+  "RequestType": "نوع الطلب",
+  "Committees": "اللجان",
+  "employees":   "الموظفين",
+  "add_employee": "إضافة موظف",
+  "employee_name": "اسم الموظف",
+  "employee_id": "رقم الموظف",
+  "employee_email": "البريد الإلكتروني للموظف",
+  "employee_phone": "رقم جوال الموظف",
+  "employee_position": "منصب الموظف",
+  "employee_department": "قسم الموظف",
+  "employee_status": "حالة الموظف",
+  "add_Permissions": "إضافة صلاحيات"
+
 
 
 

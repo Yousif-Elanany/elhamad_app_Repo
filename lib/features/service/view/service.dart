@@ -19,7 +19,10 @@ class ServicesPage extends StatelessWidget {
           alignment: Alignment.center,
           child: Text(
             "services".tr(),
-            style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ),
@@ -30,41 +33,82 @@ class ServicesPage extends StatelessWidget {
             // Grid للكروت
             SliverGrid(
               delegate: SliverChildListDelegate([
-                _buildServiceCard("associations".tr(), Icons.business_outlined, 12, () {
-                  Navigator.pushNamed(context, "/organizations");
-                }),
-                _buildServiceCard("board_of_directors".tr(), Icons.groups_outlined, 8, () {
-                  Navigator.pushNamed(context, "/Management");
+                _buildServiceCard(
+                  "associations".tr(),
+                  Icons.business_outlined,
+                  12,
+                  () {
+                    Navigator.pushNamed(context, "/organizations");
+                  },
+                ),
+                _buildServiceCard(
+                  "board_of_directors".tr(),
+                  Icons.groups_outlined,
+                  8,
+                  () {
+                    Navigator.pushNamed(context, "/Management");
+                  },
+                ),
+                _buildServiceCard(
+                  "committees".tr(),
+                  Icons.folder_open_outlined,
+                  15,
+                  () {
+                    Navigator.pushNamed(context, "/committees");
+                  },
+                ),
+                _buildServiceCard(
+                  "Tasks".tr(),
+                  Icons.folder_open_outlined,
+                  15,
+                  () {
+                    Navigator.pushNamed(context, "/Tasks");
+                  },
+                ),
+                _buildServiceCard(
+                  "Executives/Administrators".tr(),
+                  Icons.folder_open_outlined,
+                  15,
+                  () {
+                    Navigator.pushNamed(context, "/ExecutivesAdministrators");
+                  },
+                ),
 
+                _buildServiceCard(
+                  "employees".tr(),
+                  Icons.groups_outlined,
+                  24,
+                  () {
 
-                }),
-                _buildServiceCard("committees".tr(), Icons.folder_open_outlined, 15, () {}),
-                _buildServiceCard("Tasks".tr(), Icons.folder_open_outlined, 15, () {
-                  Navigator.pushNamed(context, "/Tasks");
+                    Navigator.pushNamed(context, "/employees");
 
-                }),
-                _buildServiceCard("Executives/Administrators".tr(), Icons.folder_open_outlined, 15, () {
-                  Navigator.pushNamed(context, "/ExecutivesAdministrators");
+                  },
+                ),
+                _buildServiceCard(
+                  "documentation".tr(),
+                  Icons.assignment_outlined,
+                  6,
+                  () {
+                    Navigator.pushNamed(context, "/Docu");
+                  },
+                ),
+                _buildServiceCard(
+                  "messages_support".tr(),
+                  Icons.chat_bubble_outline,
+                  10,
+                  () {
+                    Navigator.pushNamed(context, "/Massage");
+                  },
+                ),
 
-
-                }),
-
-                _buildServiceCard("decisions".tr(), Icons.description_outlined, 24, () {}),
-                _buildServiceCard("documentation".tr(), Icons.assignment_outlined, 6, () {
-
-                  Navigator.pushNamed(context, "/Docu");
-                }),
-                _buildServiceCard("messages_support".tr(), Icons.chat_bubble_outline, 10, () {
-                  Navigator.pushNamed(context, "/Massage");
-
-
-                }),
-                _buildServiceCard("policies_regulations".tr(), Icons.book, 3, () {
-
-                  Navigator.pushNamed(context, "/Rule");
-
-
-                }),
+                _buildServiceCard(
+                  "policies_regulations".tr(),
+                  Icons.book,
+                  3,
+                  () {
+                    Navigator.pushNamed(context, "/Rule");
+                  },
+                ),
               ]),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
@@ -74,9 +118,7 @@ class ServicesPage extends StatelessWidget {
               ),
             ),
 
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 16),
-            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 16)),
 
             // SliverToBoxAdapter(
             //   child: SizedBox(
@@ -91,14 +133,21 @@ class ServicesPage extends StatelessWidget {
     );
   }
 
-  Widget _buildServiceCard(String title, IconData icon, int count, VoidCallback onTap) {
+  Widget _buildServiceCard(
+    String title,
+    IconData icon,
+    int count,
+    VoidCallback onTap,
+  ) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10)],
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10),
+          ],
         ),
         child: Stack(
           children: [
@@ -118,21 +167,21 @@ class ServicesPage extends StatelessWidget {
                 ],
               ),
             ),
-            Positioned(
-              top: 12,
-              left: 12,
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: const BoxDecoration(
-                  color: Color(0xFF8B8E75),
-                  shape: BoxShape.circle,
-                ),
-                child: Text(
-                  "$count",
-                  style: const TextStyle(color: Colors.white, fontSize: 10),
-                ),
-              ),
-            ),
+            // Positioned(
+            //   top: 12,
+            //   left: 12,
+            //   child: Container(
+            //     padding: const EdgeInsets.all(6),
+            //     decoration: const BoxDecoration(
+            //       color: Color(0xFF8B8E75),
+            //       shape: BoxShape.circle,
+            //     ),
+            //     child: Text(
+            //       "$count",
+            //       style: const TextStyle(color: Colors.white, fontSize: 10),
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       ),

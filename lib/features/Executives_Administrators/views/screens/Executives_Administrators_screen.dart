@@ -50,6 +50,14 @@ class _ExecutivesAdministratorsState extends State<ExecutivesAdministrators> {
         iconTheme: const IconThemeData(color: Colors.black),
         // تجنب استخدام Center widget داخل العنوان واستخدم الخاصية الجاهزة
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.arrow_forward),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+        ],
         title: Text(
           "Executives/Administrators".tr(),
           style: const TextStyle(

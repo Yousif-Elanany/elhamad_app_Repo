@@ -1,3 +1,4 @@
+import 'package:alhamd/core/constants/constants.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -19,7 +20,10 @@ class ApiInterceptor extends Interceptor {
   });
 
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
+  void onRequest(
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) async {
     final requiresToken = options.extra['requiresToken'] as bool? ?? true;
 
     if (requiresToken && !options.headers.containsKey('Authorization')) {
@@ -27,51 +31,82 @@ class ApiInterceptor extends Interceptor {
       String? token = await getAccessToken();
 
       // لو null، نجرب نجيب من CacheHelper
-      token ??= CacheHelper.getToken();
+      token = CacheHelper.getData("token");
+
+      print("🔑 [Interceptor] Token from getAccessToken: $token");
 
       if (token != null && token.isNotEmpty) {
         options.headers['Authorization'] = 'Bearer $token';
       }
     }
 
-    debugPrint('📤 [REQUEST] ${options.method.toUpperCase()} => ${options.uri}');
+    debugPrint(
+      '📤 [REQUEST] ${options.method.toUpperCase()} => ${options.uri}',
+    );
     return handler.next(options);
   }
-
-
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
     final apiError = handleDioError(err);
 
-    debugPrint('${err.requestOptions.uri}');
-    debugPrint('Message: ${apiError.message}');
-
     if (apiError.statusCode == 401) {
-      // 1️⃣ مسح البيانات المحلية
-      await CacheHelper.clear();
-      // 2️⃣ اظهار Toast
-      Fluttertoast.showToast(
-        msg: "تم انتهاء مدة الجلسة",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        backgroundColor: AppColors.primary,
-        textColor: Colors.white,
-      );
+      // نجرب نجدد التوكن أولاً
+      final refreshed = await refreshToken();
 
-      // 3️⃣ توجيه المستخدم للصفحة المطلوبة
-      navigatorKey.currentState?.pushNamedAndRemoveUntil(
-        '/login', // route اسم صفحة تسجيل الدخول
-            (route) => false, // يشيل كل الصفحات القديمة
-      );
+      if (refreshed) {
+        // إعادة تنفيذ الـ request الأصلي مع التوكن الجديد
+        final options = err.requestOptions;
+        final newToken = await getAccessToken() ?? CacheHelper.getData("token");
+        if (newToken != null) {
+          options.headers['Authorization'] = 'Bearer $newToken';
+        }
+
+        final cloneReq = await dio.fetch(options);
+        return handler.resolve(cloneReq);
+      } else {
+        // لو ما نجحش التجديد، نعمل logout
+        await onLogout();
+      }
     }
 
     super.onError(err, handler);
   }
 
+  Future<bool> refreshToken() async {
+    try {
+      final refreshToken = CacheHelper.getData("token");
+      if (refreshToken == null) return false;
+
+      final response = await dio.post(
+        '${baseUrl}auth/refresh',
+        data: {'refreshToken': refreshToken},
+        options: Options(
+          headers: {'Accept-Language': 'ar'},
+          extra: {'requiresToken': false}, // ما تحتاجش Authorization هنا
+        ),
+      );
+
+      final newAccessToken = response.data['accessToken'];
+      final newRefreshToken = response.data['refreshToken'];
+
+      if (newAccessToken != null && newRefreshToken != null) {
+        await CacheHelper.saveData(key: "token", value: newAccessToken);
+        await CacheHelper.saveData(key: "refreshToken", value: newRefreshToken);
+        return true;
+      }
+
+      return false;
+    } catch (_) {
+      return false;
+    }
+  }
+
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    debugPrint('✅ [RESPONSE] ${response.statusCode} => ${response.requestOptions.uri}');
+    debugPrint(
+      '✅ [RESPONSE] ${response.statusCode} => ${response.requestOptions.uri}',
+    );
     return handler.next(response);
   }
 }
