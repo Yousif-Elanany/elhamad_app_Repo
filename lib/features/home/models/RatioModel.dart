@@ -1,17 +1,28 @@
 import 'dart:ui';
 
-class RatioItem {
-  final String title;
-  final int total;
-  final int used;
-  final Color barColor;
+import '../../../core/constants/app_colors.dart';
+import 'SubscriptionsModel.dart';
 
-  const RatioItem({
+class RatioItem {
+  String title;
+  int total;
+  int used;
+  double get percent => total == 0 ? 0 : used / total;
+  Color barColor;
+
+  RatioItem({
     required this.title,
     required this.total,
     required this.used,
     required this.barColor,
   });
 
-  double get percent => total == 0 ? 0 : used / total;
+  factory RatioItem.fromSubscription(SubscriptionsResponseModel sub) {
+    return RatioItem(
+      title: sub.featureName,
+      total: sub.availableCount,
+      used: sub.usageCount,
+      barColor: AppColors.primaryOlive,
+    );
+  }
 }

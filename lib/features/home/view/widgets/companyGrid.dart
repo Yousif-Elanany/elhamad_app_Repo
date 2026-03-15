@@ -2,9 +2,17 @@
 import 'package:flutter/material.dart';
 
 import 'CompanyCard.dart';
-
 class CompanyInfoGrid extends StatelessWidget {
-  const CompanyInfoGrid();
+  final int capitalAmount;
+  final int shareCount;
+  final int nominalShareValue;
+
+  const CompanyInfoGrid({
+    super.key,
+    required this.capitalAmount,
+    required this.shareCount,
+    required this.nominalShareValue,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +21,7 @@ class CompanyInfoGrid extends StatelessWidget {
         Expanded(
           child: CompanyCard(
             label: 'رأس المال',
-            value: '50,000,000',
+            value: capitalAmount.toString(),
             sub: 'الريال السعودي',
             showCurrency: true,
           ),
@@ -22,7 +30,7 @@ class CompanyInfoGrid extends StatelessWidget {
         Expanded(
           child: CompanyCard(
             label: 'عدد الأسهم',
-            value: '500,000',
+            value: shareCount.toString(),
             sub: 'سهم مُصدَر',
             showCurrency: false,
           ),
@@ -31,7 +39,7 @@ class CompanyInfoGrid extends StatelessWidget {
         Expanded(
           child: CompanyCard(
             label: 'القيمة الرسمية للسهم',
-            value: '100',
+            value: nominalShareValue.toString(),
             sub: 'لكل سهم',
             showCurrency: true,
           ),

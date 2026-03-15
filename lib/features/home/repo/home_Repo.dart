@@ -1,3 +1,5 @@
+import 'package:alhamd/features/home/models/SubscriptionsModel.dart';
+
 import '../models/AboutUserModel.dart';
 import '../models/CompanyDetailReasponseModel.dart';
 import '../models/MeetingForTodayResponseModel.dart';
@@ -22,8 +24,8 @@ class HomeRepository implements HomeRemoteDataSource {
 
 
   @override
-  Future<Map<String, dynamic>> getSubscriptions(String nationalId) {
-    return remote.getSubscriptions(nationalId);
+  Future<List<SubscriptionsResponseModel>> getSubscriptions(String companyId) {
+    return remote.getSubscriptions(companyId);
   }
 
 

@@ -41,34 +41,8 @@ class _CompanyHomePageState extends State<CompanyHomePage> {
     // Load home data when the widget is first created
     final homeCubit = context.read<HomeCubit>();
     homeCubit.loadHomeData();
+    // homeCubit.getSubscriptions(homeCubit.nationalId ?? '');
   }
-
-  List<RatioItem> ratios = [
-    RatioItem(
-      title: 'توثيق العقود',
-      total: 44,
-      used: 0,
-      barColor: AppColors.primaryOlive,
-    ),
-    RatioItem(
-      title: 'إرسال رسالة بريد إلكتروني',
-      total: 33,
-      used: 0,
-      barColor: AppColors.primaryOlive,
-    ),
-    RatioItem(
-      title: 'اجتماع لجنة',
-      total: 12,
-      used: 0,
-      barColor: AppColors.primaryOlive,
-    ),
-    RatioItem(
-      title: 'إرسال رسالة بريد إلكتروني',
-      total: 22,
-      used: 0,
-      barColor: AppColors.primaryOlive,
-    ),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -160,9 +134,7 @@ class _CompanyHomePageState extends State<CompanyHomePage> {
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.grey.withOpacity(
-                      0.1,
-                    ), // غيّر اللون حسب الحاجة
+                    color: Colors.grey.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Align(
@@ -180,11 +152,41 @@ class _CompanyHomePageState extends State<CompanyHomePage> {
                 ),
                 const SizedBox(height: 8),
 
-                ...ratios.map(
-                  (r) => Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: RatioCard(item: r),
-                  ),
+                BlocBuilder<HomeCubit, HomeState>(
+                  builder: (context, state) {
+                    if (state is HomeLoading) {
+                      return Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primaryOlive,
+                          strokeWidth: 4,
+                        ),
+                      );
+                    } else if (state is HomeSuccess) {
+                      final cubit = context.read<HomeCubit>();
+
+                      final ratios = cubit.subscriptions ?? [];
+
+                      return Column(
+                        children: ratios
+                            .map(
+                              (r) => Padding(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                child: RatioCard(item: r),
+                              ),
+                            )
+                            .toList(),
+                      );
+                    } else if (state is SubscriptionsFailure) {
+                      return Center(
+                        child: Text(
+                          "حدث خطأ في الاشتراكات: ${state.error}",
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      );
+                    } else {
+                      return const SizedBox();
+                    }
+                  },
                 ),
                 const SizedBox(height: 8),
 
@@ -210,7 +212,35 @@ class _CompanyHomePageState extends State<CompanyHomePage> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                CompanyInfoGrid(),
+                BlocBuilder<HomeCubit, HomeState>(
+                  builder: (context, state) {
+                    if (state is HomeLoading) {
+                      return Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primaryOlive,
+                          strokeWidth: 4,
+                        ),
+                      );
+                    }
+
+                    if (state is HomeSuccess) {
+                      final cubit = context.read<HomeCubit>();
+                      final company = cubit.companyInfo!;
+
+                      return CompanyInfoGrid(
+                        capitalAmount: company.capitalAmount,
+                        shareCount: company.shareCount,
+                        nominalShareValue: company.nominalShareValue,
+                      );
+                    }
+
+                    if (state is HomeFailure) {
+                      return const Text("حدث خطأ");
+                    }
+
+                    return const SizedBox();
+                  },
+                ),
                 const SizedBox(height: 24),
                 // داخل Column اللي تحت Upcoming Meetings
                 Row(
@@ -224,12 +254,16 @@ class _CompanyHomePageState extends State<CompanyHomePage> {
                       builder: (context, state) {
                         // احنا محتاجين نعرف هل في اجتماعات ولا لأ
                         bool hasMeetings = false;
-                        if (state is MeetingTodaySuccess && state.data.meetings.isNotEmpty) {
+                        if (state is MeetingTodaySuccess &&
+                            state.data.meetings.isNotEmpty) {
                           hasMeetings = true;
                         }
 
                         return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.primaryOlive.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(20),

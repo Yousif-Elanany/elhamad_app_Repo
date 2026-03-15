@@ -11,14 +11,14 @@ class SubscriptionsResponseModel {
   String featureName;
   int availableCount;
   int usageCount;
-  dynamic lastUsedAt;
+  String? lastUsedAt;
 
   SubscriptionsResponseModel({
     required this.featureCode,
     required this.featureName,
     required this.availableCount,
     required this.usageCount,
-    required this.lastUsedAt,
+     this.lastUsedAt,
   });
 
   factory SubscriptionsResponseModel.fromJson(Map<String, dynamic> json) => SubscriptionsResponseModel(
@@ -26,7 +26,7 @@ class SubscriptionsResponseModel {
     featureName: json["featureName"],
     availableCount: json["availableCount"],
     usageCount: json["usageCount"],
-    lastUsedAt: json["lastUsedAt"],
+    lastUsedAt: json["lastUsedAt"]??"",
   );
 
   Map<String, dynamic> toJson() => {

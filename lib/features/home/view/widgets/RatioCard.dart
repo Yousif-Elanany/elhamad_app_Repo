@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../models/RatioModel.dart';
+import '../../models/SubscriptionsModel.dart';
 
 class RatioCard extends StatelessWidget {
-  final RatioItem item;
+  final SubscriptionsResponseModel item;
   const RatioCard({required this.item});
 
   @override
@@ -31,7 +32,7 @@ class RatioCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  item.title,
+                  item.featureName,
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -46,7 +47,7 @@ class RatioCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  '${item.total} / ${item.used}',
+                  '${item.availableCount} / ${item.usageCount}',
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
@@ -60,15 +61,15 @@ class RatioCard extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(99),
             child: LinearProgressIndicator(
-              value: item.percent,
+              value: item.availableCount == 0 ? 0 : item.usageCount / item.availableCount ,
               minHeight: 7,
               backgroundColor: AppColors.primary.withOpacity(0.15),
-              valueColor: AlwaysStoppedAnimation<Color>(item.barColor),
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.background),
             ),
           ),
           const SizedBox(height: 4),
           Text(
-            '${(item.percent * 100).toStringAsFixed(0)}%',
+            '${(item.usageCount * 100).toStringAsFixed(0)}%',
             style: const TextStyle(fontSize: 11, color: AppColors.primary),
           ),
         ],

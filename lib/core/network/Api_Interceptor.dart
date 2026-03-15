@@ -75,9 +75,7 @@ class ApiInterceptor extends Interceptor {
 
   Future<bool> refreshToken() async {
     try {
-      final refreshToken = CacheHelper.getData("token");
-      if (refreshToken == null) return false;
-
+      final refreshToken = await CacheHelper.getData("refToken");
       final response = await dio.post(
         '${baseUrl}auth/refresh',
         data: {'refreshToken': refreshToken},

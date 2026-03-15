@@ -5,6 +5,7 @@ import 'package:meta/meta.dart';
 import '../models/AboutUserModel.dart';
 import '../models/CompanyDetailReasponseModel.dart';
 import '../models/MeetingForTodayResponseModel.dart';
+import '../models/SubscriptionsModel.dart';
 
 part 'home_state.dart';
 
@@ -14,7 +15,7 @@ class HomeCubit extends Cubit<HomeState> {
   HomeCubit(this.repository) : super(HomeInitial());
   CompanyDetailReasponseModel? companyInfo;
   MeetingForTodayReasponseModel? meetings;
-  Map<String, dynamic>? subscriptions;
+  List<SubscriptionsResponseModel>? subscriptions;
   String? companyId;
   String? nationalId;
 
@@ -30,11 +31,13 @@ class HomeCubit extends Cubit<HomeState> {
       /// 2️⃣ company detail
       if (companyId != null) {
         companyInfo = await repository.getCompanyInfo(companyId!);
+    print( "companyInfo===> ${companyInfo!.name}" );
+
       }
 
-      /// 3️⃣ subscriptions
-      if (nationalId != null) {
-        subscriptions = await repository.getSubscriptions(nationalId!);
+      /// 3️⃣ subscriptions2
+      if (companyId != null) {
+        subscriptions = await repository.getSubscriptions(companyId!);
       }
 
       /// 4️⃣ meetings
@@ -55,6 +58,8 @@ class HomeCubit extends Cubit<HomeState> {
       emit(CompanyInfoLoading());
 
       final data = await repository.getCompanyInfo(companyId);
+      print(data);
+
 
       emit(CompanyInfoSuccess(data));
     } catch (e) {
@@ -76,11 +81,11 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   /// Subscriptions
-  Future<void> getSubscriptions(String nationalId) async {
+  Future<void> getSubscriptions(String companyId) async {
     try {
       emit(SubscriptionsLoading());
 
-      final data = await repository.getSubscriptions(nationalId);
+      final data = await repository.getSubscriptions(companyId);
 
       emit(SubscriptionsSuccess(data));
     } catch (e) {

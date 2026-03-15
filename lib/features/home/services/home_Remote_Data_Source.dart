@@ -2,6 +2,7 @@ import '../../../core/network/DioService.dart';
 import '../models/AboutUserModel.dart';
 import '../models/CompanyDetailReasponseModel.dart';
 import '../models/MeetingForTodayResponseModel.dart';
+import '../models/SubscriptionsModel.dart';
 
 class HomeRemoteDataSource {
 
@@ -12,7 +13,7 @@ class HomeRemoteDataSource {
       "companies/$companyId/dashboard/company-details",
       requiresToken: true,
     );
-
+print("response===> ${response.data['shareCount']}");
     return CompanyDetailReasponseModel.fromJson(response.data);
   }
 
@@ -38,16 +39,16 @@ class HomeRemoteDataSource {
 
 
 
-  Future<Map<String, dynamic>> getSubscriptions(String companyId) async {
-    final response = await DioHelper.post(
+  Future<List<SubscriptionsResponseModel>> getSubscriptions(String companyId) async {
+    final response = await DioHelper.get(
       "companies/$companyId/subscriptions/usages",
       query: {"Accept-Language": "ar"},
-
-
-      requiresToken: false, // المستخدم الجديد مش محتاج توكن
+      requiresToken: true,
     );
 
-    return response.data;
+    // الريسبونس هنا عبارة عن List
+    return List<SubscriptionsResponseModel>.from(
+        response.data.map((x) => SubscriptionsResponseModel.fromJson(x)));
   }
 
   Future<Map<String, dynamic>> getManagementNotCompleted(

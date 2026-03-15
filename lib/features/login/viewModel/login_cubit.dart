@@ -18,7 +18,9 @@ class LoginCubit extends Cubit<LoginState> {
     try {
       final response = await repository.login(request);
       CacheHelper.saveData(key: "token", value: response.accessToken);
-      print("cashed token: ${CacheHelper.getData("token")}");
+      CacheHelper.saveData(key: "refToken", value: response.refreshToken);
+
+      print("ref token: ${CacheHelper.getData("refToken")}");
       emit(LoginSuccess(response.username ?? 'Login successful'));
     } catch (e) {
       if (e is ApiException) {
@@ -48,6 +50,8 @@ class LoginCubit extends Cubit<LoginState> {
     try {
       final response = await repository.verifyLogin(nationalId, pin);
       CacheHelper.saveData(key: "token", value: response.accessToken);
+      CacheHelper.saveData(key: "refToken", value: response.refreshToken);
+
       print("cashed token: ${CacheHelper.getData("token")}");
 
 

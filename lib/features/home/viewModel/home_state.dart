@@ -48,7 +48,7 @@ class MeetingTodayFailure extends HomeState {
 class SubscriptionsLoading extends HomeState {}
 
 class SubscriptionsSuccess extends HomeState {
-  final Map<String, dynamic> data;
+  final List<SubscriptionsResponseModel> data;
 
   SubscriptionsSuccess(this.data);
 }

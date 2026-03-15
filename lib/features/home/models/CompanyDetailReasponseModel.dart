@@ -23,13 +23,13 @@ class CompanyDetailReasponseModel {
   String investorRelationsEmail;
   String corporateHeadquarters;
   CompanyLogo companyLogo;
-  dynamic companySeal;
+  String? companySeal;
   String adminEmail;
   String adminNationalId;
   String adminPhone;
   String adminName;
   String adminNameAr;
-  DateTime createdAt;
+  String createdAt;
 
   CompanyDetailReasponseModel({
     required this.id,
@@ -55,29 +55,30 @@ class CompanyDetailReasponseModel {
     required this.createdAt,
   });
 
-  factory CompanyDetailReasponseModel.fromJson(Map<String, dynamic> json) => CompanyDetailReasponseModel(
-    id: json["id"],
-    name: json["name"],
-    nameAr: json["nameAr"],
-    nationalUnifiedNumber: json["nationalUnifiedNumber"],
-    shareCount: json["shareCount"],
-    nominalShareValue: json["nominalShareValue"],
-    capitalAmount: json["capitalAmount"],
-    paidUpCapitalAmount: json["paidUpCapitalAmount"],
-    companyType: json["companyType"],
-    companyStatus: json["companyStatus"],
-    investorRelationsPhone: json["investorRelationsPhone"],
-    investorRelationsEmail: json["investorRelationsEmail"],
-    corporateHeadquarters: json["corporateHeadquarters"],
-    companyLogo: CompanyLogo.fromJson(json["companyLogo"]),
-    companySeal: json["companySeal"],
-    adminEmail: json["adminEmail"],
-    adminNationalId: json["adminNationalId"],
-    adminPhone: json["adminPhone"],
-    adminName: json["adminName"],
-    adminNameAr: json["adminNameAr"],
-    createdAt: DateTime.parse(json["createdAt"]),
-  );
+  factory CompanyDetailReasponseModel.fromJson(Map<String, dynamic> json) =>
+      CompanyDetailReasponseModel(
+        id: json["id"],
+        name: json["name"],
+        nameAr: json["nameAr"],
+        nationalUnifiedNumber: json["nationalUnifiedNumber"],
+        shareCount: json["shareCount"],
+        nominalShareValue: json["nominalShareValue"],
+        capitalAmount: json["capitalAmount"],
+        paidUpCapitalAmount: json["paidUpCapitalAmount"],
+        companyType: json["companyType"],
+        companyStatus: json["companyStatus"],
+        investorRelationsPhone: json["investorRelationsPhone"],
+        investorRelationsEmail: json["investorRelationsEmail"],
+        corporateHeadquarters: json["corporateHeadquarters"],
+        companyLogo: CompanyLogo.fromJson(json["companyLogo"]),
+        companySeal: json["companySeal"],
+        adminEmail: json["adminEmail"],
+        adminNationalId: json["adminNationalId"],
+        adminPhone: json["adminPhone"],
+        adminName: json["adminName"],
+        adminNameAr: json["adminNameAr"],
+        createdAt: json["createdAt"],
+      );
 
   Map<String, dynamic> toJson() => {
     "id": id,
@@ -100,7 +101,7 @@ class CompanyDetailReasponseModel {
     "adminPhone": adminPhone,
     "adminName": adminName,
     "adminNameAr": adminNameAr,
-    "createdAt": createdAt.toIso8601String(),
+    "createdAt": createdAt,
   };
 }
 

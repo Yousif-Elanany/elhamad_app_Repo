@@ -10,11 +10,15 @@ class DioHelper {
   static final navigatorKey = GlobalKey<NavigatorState>();
 
   static late Future<String?> Function() _getAccessToken;
+  static late Future<String?> Function() _getRefToken;
+
   static late Future<void> Function() _onLogout;
 
   /// تهيئة DioHelper
   static Future<void> init({
     required Future<String?> Function() getAccessToken,
+     Future<String?> Function()? RefToken,
+
     required Future<dynamic> Function() onLogout,
   }) async {
     _getAccessToken = getAccessToken;
