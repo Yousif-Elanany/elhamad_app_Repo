@@ -1,18 +1,46 @@
 import 'package:alhamd/core/constants/app_colors.dart';
+import 'package:alhamd/features/managments/repos/Managment_Repo.dart';
+import 'package:alhamd/features/managments/services/management_Remote_Data_Source.dart';
+import 'package:alhamd/features/managments/viewModel/management_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/network/cache_helper.dart';
 import '../../../../localization_service.dart';
+import '../../viewModel/management_cubit.dart';
 import '../widgets/BoardTabContent.dart';
 import '../widgets/ShareholdersTabContent.dart';
 
-class Managementscreen extends StatefulWidget {
-  const Managementscreen({super.key});
+class ManagementScreenWrapper extends StatelessWidget {
+  const ManagementScreenWrapper({super.key});
 
   @override
-  State<Managementscreen> createState() => _ManagementscreenState();
+  Widget build(BuildContext context) {
+    print("🔥 CompanyHomeWrapper built");
+    return BlocProvider(
+      create: (_) =>
+          ManagementCubit(ManagementRepository(ManagementRemoteDataSource())),
+      child: const ManagementScreen(),
+    );
+  }
 }
 
-class _ManagementscreenState extends State<Managementscreen> {
+class ManagementScreen extends StatefulWidget {
+  const ManagementScreen({super.key});
+
+  @override
+  State<ManagementScreen> createState() => _ManagementScreenState();
+}
+
+class _ManagementScreenState extends State<ManagementScreen> {
+
+  @override
+  void initState() {
+    super.initState();
+      print("🔥 ManagementScreen initState called");
+    final cubit = context.read<ManagementCubit>();
+    cubit.getDirectors(CacheHelper.getData("companyId"));
+  }
   @override
   Widget build(BuildContext context) {
     return Directionality(
@@ -29,12 +57,13 @@ class _ManagementscreenState extends State<Managementscreen> {
               onPressed: () {
                 Navigator.pop(context);
               },
-            ),],
+            ),
+          ],
           title: Align(
             alignment: Alignment.center,
             child: Text(
               "مجلس الإدارة",
-              style:  TextStyle(
+              style: TextStyle(
                 color: AppColors.primaryOlive,
                 fontWeight: FontWeight.bold,
               ),

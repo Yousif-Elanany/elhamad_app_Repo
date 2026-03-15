@@ -1,3 +1,4 @@
+import 'package:alhamd/core/network/cache_helper.dart';
 import 'package:alhamd/features/home/repo/home_Repo.dart';
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
@@ -27,7 +28,8 @@ class HomeCubit extends Cubit<HomeState> {
       /// 1️⃣ userForMe
       final user = await repository.userForMe();
       companyId = user.companyId;
-
+      await CacheHelper.saveData(key: "companyId", value: companyId);
+print( "userForMe===> Cashed , companyId: ${CacheHelper.getData("companyId")}");
       /// 2️⃣ company detail
       if (companyId != null) {
         companyInfo = await repository.getCompanyInfo(companyId!);

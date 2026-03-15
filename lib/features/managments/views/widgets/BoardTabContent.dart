@@ -1,9 +1,11 @@
 import 'package:alhamd/features/managments/views/widgets/addBoard.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/ActionIconButton.dart';
 import '../../../../core/widgets/chatDialog.dart';
+import '../../viewModel/management_cubit.dart';
 import 'MembersScreen.dart';
 import 'managmentWidget.dart';
 
@@ -47,29 +49,65 @@ class _BoardTabContentState extends State<BoardTabContent> {
 
           SizedBox(height: 20),
           Expanded(
-            child: ListView.builder(
-              itemCount: 3,
-           //   padding: const EdgeInsets.symmetric(vertical: 8),
-              itemBuilder: (context, index) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: ManagementWidget(
-                  caseName: "12123456",
-                  startDate: "الثلاثاء، 3 فبراير 2026",
-                  endDate: "الثلاثاء، 24 فبراير 2026",
-                  boardMembers: "4",
-                  activeMembers: "4",
-                  availableSeats: "3",
-                  status: "1",
-                  onViewTap: () => print("عرض التفاصيل"),
-                  onGroupTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const BoardMembersPage(),
+            child: BlocBuilder<ManagementCubit, ManagementState>(
+              builder: (context, state) {
+
+                if (state is DirectorsLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (state is DirectorsFailure) {
+                  return Center(
+                    child: Text(
+                      "حدث خطأ: ${state.error}",
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  );
+                }
+
+                if (state is DirectorsSuccess) {
+                  final directors = state.data.items; // غيّر حسب موديلك
+
+                  if (directors.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        "لا يوجد مجالس إدارة",
+                        style: TextStyle(color: Colors.grey),
                       ),
                     );
-                  },             ),
-              ),
+                  }
+
+                  return ListView.builder(
+                    itemCount: directors.length,
+                    itemBuilder: (context, index) {
+                      final board = directors[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: ManagementWidget(
+                          caseName: board.id.toString() ?? '',         // غيّر حسب موديلك
+                          startDate: board.id.toString() ?? '',
+                          endDate:board.id.toString() ?? '',
+                          boardMembers:board.membersCount.toString() ?? '',
+                          activeMembers: board.activeMembersCount?.toString() ?? '0',
+                          availableSeats: board.openPositionCount?.toString() ?? '0',
+                          status: board.isActive  ? "نشط" : "غير نشط" ,
+                          onViewTap: () => print("عرض التفاصيل"),
+                          onGroupTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const BoardMembersPage(),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  );
+                }
+
+                return const SizedBox();
+              },
             ),
           ),
       ]),

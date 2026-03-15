@@ -90,7 +90,7 @@ class ApiInterceptor extends Interceptor {
 
       if (newAccessToken != null && newRefreshToken != null) {
         await CacheHelper.saveData(key: "token", value: newAccessToken);
-        await CacheHelper.saveData(key: "refreshToken", value: newRefreshToken);
+        await CacheHelper.saveData(key: "refToken", value: newRefreshToken);
         return true;
       }
 

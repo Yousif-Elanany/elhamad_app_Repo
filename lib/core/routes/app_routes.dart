@@ -88,7 +88,7 @@ class AppRoutes {
       case contactus:
         return MaterialPageRoute(builder: (context) => Contactus());
       case Management:
-        return MaterialPageRoute(builder: (context) => Managementscreen());
+        return MaterialPageRoute(builder: (context) => ManagementScreenWrapper());
       case settingspage:
         return MaterialPageRoute(builder: (context) => Settings());
       case Committees:
