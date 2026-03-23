@@ -1,8 +1,10 @@
 import 'package:alhamd/features/managments/views/widgets/addBoard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/network/cache_helper.dart';
 import '../../../../core/widgets/ActionIconButton.dart';
 import '../../../../core/widgets/chatDialog.dart';
 import '../../viewModel/management_cubit.dart';
@@ -10,12 +12,19 @@ import 'MembersScreen.dart';
 import 'managmentWidget.dart';
 
 class BoardTabContent extends StatefulWidget {
+  final ManagementCubit cubit;
+  const BoardTabContent({super.key, required this.cubit});
   @override
   _BoardTabContentState createState() => _BoardTabContentState();
 }
 
 class _BoardTabContentState extends State<BoardTabContent> {
   String selectedStatus = 'الكل';
+  @override
+  void initState() {
+    super.initState();
+    widget.cubit.getDirectors(CacheHelper.getData("companyId"));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +60,6 @@ class _BoardTabContentState extends State<BoardTabContent> {
           Expanded(
             child: BlocBuilder<ManagementCubit, ManagementState>(
               builder: (context, state) {
-
                 if (state is DirectorsLoading) {
                   return const Center(child: CircularProgressIndicator());
                 }
@@ -84,19 +92,32 @@ class _BoardTabContentState extends State<BoardTabContent> {
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: ManagementWidget(
-                          caseName: board.id.toString() ?? '',         // غيّر حسب موديلك
-                          startDate: board.id.toString() ?? '',
-                          endDate:board.id.toString() ?? '',
-                          boardMembers:board.membersCount.toString() ?? '',
-                          activeMembers: board.activeMembersCount?.toString() ?? '0',
-                          availableSeats: board.openPositionCount?.toString() ?? '0',
-                          status: board.isActive  ? "نشط" : "غير نشط" ,
+                          caseName:
+                              board.id.toString() ?? '', // غيّر حسب موديلك
+                          startDate: DateFormat(
+                            'yyyy/MM/dd',
+                          ).format(board.startDate),
+                          endDate: DateFormat(
+                            'yyyy/MM/dd',
+                          ).format(board.endDate),
+                          boardMembers: board.membersCount.toString() ?? '',
+                          activeMembers:
+                              board.activeMembersCount?.toString() ?? '0',
+                          availableSeats:
+                              board.openPositionCount?.toString() ?? '0',
+                          status: board.isActive ? "نشط" : "غير نشط",
                           onViewTap: () => print("عرض التفاصيل"),
                           onGroupTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const BoardMembersPage(),
+                                builder: (context) => BlocProvider.value(
+                                  value: widget.cubit,
+                                  child: BoardMembersPage(
+                                    boardId: board.id.toString(),
+                                    cubit: widget.cubit,
+                                  ),
+                                ),
                               ),
                             );
                           },
@@ -110,18 +131,17 @@ class _BoardTabContentState extends State<BoardTabContent> {
               },
             ),
           ),
-      ]),
+        ],
+      ),
     );
   }
-
 }
+
 class FirstDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -132,7 +152,6 @@ class FirstDialog extends StatelessWidget {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
-
 
             ElevatedButton.icon(
               onPressed: () {
@@ -163,16 +182,15 @@ class FirstDialog extends StatelessWidget {
             /// هنا ممكن تحط جدول أو قائمة الأعضاء
             Container(
               height: 200,
-              child: const Center(
-                child: Text("هنا هتظهر قائمة الأعضاء"),
-              ),
-            )
+              child: const Center(child: Text("هنا هتظهر قائمة الأعضاء")),
+            ),
           ],
         ),
       ),
     );
   }
 }
+
 class AddMemberDialog extends StatefulWidget {
   const AddMemberDialog({super.key});
 
@@ -195,7 +213,6 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-
                 const Text(
                   "إضافة عضو جديد",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),

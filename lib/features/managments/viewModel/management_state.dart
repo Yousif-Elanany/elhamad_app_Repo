@@ -35,7 +35,7 @@ final class MembersFailure extends ManagementState {
 final class ShareHoldersLoading extends ManagementState {}
 
 final class ShareHoldersSuccess extends ManagementState {
-  final Map<String, dynamic> data;
+  final ShareHoldersResponseModel data;
   ShareHoldersSuccess(this.data);
 }
 

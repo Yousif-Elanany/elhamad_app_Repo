@@ -10,22 +10,28 @@ import '../policy/views/widgets/makePolicyRequestDialog.dart';
 
 class CommitteesCard extends StatelessWidget {
   final int index;
-  final String complainant;
-  final String content;
-  final String date;
   final String type;
+  final String membersCount;
+  final String activeMemberCount;
+  final String availableSeats;
+  final String meetingsPerYear;
+  final String startDate;
+  final String endDate;
+
   final String status;
-  final ComplaintModel model;
 
   const CommitteesCard({
     super.key,
     required this.index,
-    required this.complainant,
-    required this.content,
-    required this.date,
+    required this.membersCount,
+    required this.activeMemberCount,
+    required this.availableSeats,
+    required this.meetingsPerYear,
+    required this.startDate,
+    required this.endDate,
+
     required this.type,
     required this.status,
-    required this.model,
   });
 
   Color _statusColor() {
@@ -86,13 +92,13 @@ class CommitteesCard extends StatelessWidget {
 
             const SizedBox(height: 10),
 
-            _buildRow("نوع اللجنة".tr(), complainant),
-            _buildRow("عدد الاعضاء".tr(), content),
-            _buildRow("عدد الأعضاء النشطين", date),
-            _buildRow("عدد الأماكن المتاحة", type),
-            _buildRow("تاريخ البداية", date),
-            _buildRow("تاريخ النهاية", date),
-            _buildRow("عدد الاجتماعات في السنه", type),
+            _buildRow("نوع اللجنة".tr(), type),
+            _buildRow("عدد الاعضاء".tr(),  membersCount.toString()),
+            _buildRow("عدد الأعضاء النشطين",  activeMemberCount.toString()),
+            _buildRow("عدد الأماكن المتاحة",  availableSeats.toString()),
+            _buildRow("تاريخ البداية",  startDate),
+            _buildRow("تاريخ النهاية",  endDate),
+            _buildRow("عدد الاجتماعات في السنه",  meetingsPerYear.toString()),
 
             const SizedBox(height: 12),
 
@@ -113,8 +119,8 @@ class CommitteesCard extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: ActionIconButton(
-                    onTap: () =>
-                        makePolicyRequestDialog.show(context, model: model),
+                    onTap: () {},
+                    //    makePolicyRequestDialog.show(context, model: model),
                     icon: Icons.edit,
                     iconColor: Colors.blue,
                     backgroundColor: Colors.blue.withOpacity(.1),
@@ -139,26 +145,26 @@ class CommitteesCard extends StatelessWidget {
                     borderColor: Colors.red,
                   ),
                 ),
-                // Align(
-                //   alignment: Alignment.centerLeft,
-                //   child: ActionIconButton(
-                //     onTap: (){},
-                //     icon: Icons.group,
-                //     iconColor: Colors.deepPurple,
-                //     backgroundColor: Colors.white,
-                //     borderColor: Colors.deepPurple,
-                //   ),
-                // ),
-                // Align(
-                //   alignment: Alignment.centerLeft,
-                //   child: ActionIconButton(
-                //     onTap: () => ComplaintDetailsDialog.show(context),
-                //     icon: Icons.newspaper,
-                //     iconColor: Colors.deepOrangeAccent,
-                //     backgroundColor: Colors.white,
-                //     borderColor: Colors.deepOrangeAccent,
-                //   ),
-                // ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: ActionIconButton(
+                    onTap: (){},
+                    icon: Icons.group,
+                    iconColor: Colors.deepPurple,
+                    backgroundColor: Colors.white,
+                    borderColor: Colors.deepPurple,
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: ActionIconButton(
+                    onTap: () => ComplaintDetailsDialog.show(context),
+                    icon: Icons.newspaper,
+                    iconColor: Colors.deepOrangeAccent,
+                    backgroundColor: Colors.white,
+                    borderColor: Colors.deepOrangeAccent,
+                  ),
+                ),
               ],
             ),
           ],

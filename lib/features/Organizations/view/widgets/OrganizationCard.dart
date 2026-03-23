@@ -2,8 +2,8 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-import '../../../localization_service.dart';
-import '../model/organization_model.dart';
+import '../../../../localization_service.dart';
+import '../../model/organization_model.dart';
 
 Widget buildOrgCard(Organization? org) {
   return Container(

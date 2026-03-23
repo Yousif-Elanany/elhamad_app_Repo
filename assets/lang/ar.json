@@ -107,6 +107,7 @@
   "change_app_language": "تغيير لغة التطبيق",
   "organizations": "الجمعيات",
   "request_meeting": "طلب عقد جمعية",
+  "requests_meeting": "طلبات الجمعيات",
   "org_type": "نوع الجمعية",
   "choose": "اختر",
   "action": "الإجراء",
@@ -203,7 +204,10 @@
   "employee_position": "منصب الموظف",
   "employee_department": "قسم الموظف",
   "employee_status": "حالة الموظف",
-  "add_Permissions": "إضافة صلاحيات"
+  "add_Permissions": "إضافة صلاحيات",
+  "JobTitle": "المسمى الوظيفي",
+  "BySomeOne": "بواسطة "
+
 
 
 

@@ -10,22 +10,24 @@ import '../../../policy/views/widgets/makePolicyRequestDialog.dart';
 
 class adminCard extends StatefulWidget {
   final int index;
-  final String complainant;
-  final String content;
-  final String date;
-  final String type;
+  final String name;
+  final String NationalID;
+  final String phone;
+  final String email;
   final String status;
-  final ComplaintModel model;
+  final String jobTitle;
+
 
   const adminCard({
     super.key,
     required this.index,
-    required this.complainant,
-    required this.content,
-    required this.date,
-    required this.type,
+    required this.name,
+    required this.NationalID,
+    required this.jobTitle,
+
+    required this.phone,
+    required this.email,
     required this.status,
-    required this.model,
   });
 
   @override
@@ -121,10 +123,13 @@ class _adminCardState extends State<adminCard> {
 
             const SizedBox(height: 10),
 
-            _buildRow("name".tr(), widget.complainant),
-            _buildRow("ID Number".tr(), widget.content),
-            _buildRow("phone_Num".tr(), widget.date),
-            _buildRow("email".tr(), widget.type),
+            _buildRow("name".tr(), widget.name),
+            _buildRow("ID Number".tr(), widget.NationalID),
+            _buildRow("phone_Num".tr(), widget.phone),
+            _buildRow("email".tr(), widget.email),
+            _buildRow("email".tr(), widget.email),
+            _buildRow("JobTitle".tr(), widget.jobTitle),
+
             _buildSwitchRow(
               "Activity".tr(),
               isActive,
@@ -153,8 +158,8 @@ class _adminCardState extends State<adminCard> {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: ActionIconButton(
-                    onTap: () =>
-                        makePolicyRequestDialog.show(context,model: widget.model),
+                    onTap: () {},
+                     //   makePolicyRequestDialog.show(context,model: widget.model),
                     icon: Icons.edit,
                     iconColor: Colors.blue,
                     backgroundColor: Colors.blue.withOpacity(.1),

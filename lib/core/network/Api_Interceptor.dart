@@ -79,8 +79,10 @@ class ApiInterceptor extends Interceptor {
       final response = await dio.post(
         '${baseUrl}auth/refresh',
         data: {'refreshToken': refreshToken},
+        queryParameters: {
+          "Accept-Language": "ar"
+        },
         options: Options(
-          headers: {'Accept-Language': 'ar'},
           extra: {'requiresToken': false}, // ما تحتاجش Authorization هنا
         ),
       );

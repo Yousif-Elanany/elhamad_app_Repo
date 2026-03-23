@@ -1,11 +1,13 @@
 import 'package:alhamd/features/Executives_Administrators/views/screens/Executives_Administrators_screen.dart';
 import 'package:alhamd/features/Tasks/screen/TasksScreen.dart';
 import 'package:alhamd/features/notification/view/notification.dart';
+import 'package:alhamd/features/splash/screen/splashScreen.dart';
 import 'package:flutter/material.dart';
 
 import '../../features/Committees/views/screens/CommitteesPage.dart';
 import '../../features/Documantation/view/screens/documantationScreen.dart';
 import '../../features/Executives_Administrators/views/screens/Executives_Administrators_screen.dart';
+import '../../features/Organizations/view/MainOrganization.dart';
 import '../../features/Organizations/view/Organizations.dart';
 import '../../features/employees/view/screens/employeeScreen.dart';
 import '../../features/forgetpassword/view/forgetPasswordScreen.dart';
@@ -24,7 +26,10 @@ import '../../features/ContactUs/View/screens/contactUs.dart';
 import '../../features/service/view/service.dart';
 
 class AppRoutes {
-  static const String login = '/';
+  static const String login = '/login';
+
+  static const String splash = '/';
+
   static const String forgotPassword = '/forgotPassword';
   static const String otp = '/otp';
   static const String newPassword = '/newPassword';
@@ -46,24 +51,25 @@ class AppRoutes {
   static const String Committees = "/committees";
   static const String employees = "/employees";
 
-
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
+      case splash:
+        return MaterialPageRoute(builder: (_) => const SplashScreen());
       case login:
         return MaterialPageRoute(builder: (_) => const LoginPageWrapper());
       case rules:
-        return MaterialPageRoute(builder: (_) => const RulesAndRegulations());
+        return MaterialPageRoute(builder: (_) => const RulesAndRegulationsScreenWrapper());
       case Documantation:
         return MaterialPageRoute(builder: (_) => const DocumantationScreen());
       case Massage:
-        return MaterialPageRoute(builder: (_) => const MassageScreen());
+        return MaterialPageRoute(builder: (_) => const MassageScreenWrapper());
       case Tasks:
-        return MaterialPageRoute(builder: (_) => const TasksScreen());
+        return MaterialPageRoute(builder: (_) => const TasksWrapper());
       case employees:
         return MaterialPageRoute(builder: (_) => const EmployeesScreen());
       case Administrators:
         return MaterialPageRoute(
-          builder: (_) => const ExecutivesAdministrators(),
+          builder: (_) => const ExecutivesAdministratorsScreenWrapper(),
         );
       case forgotPassword:
         return MaterialPageRoute(builder: (_) => const ForgotPasswordPage());
@@ -84,15 +90,17 @@ class AppRoutes {
       case meetingDetailed:
         return MaterialPageRoute(builder: (context) => MeetingDetailsPage());
       case organizations:
-        return MaterialPageRoute(builder: (context) => Organizations());
+        return MaterialPageRoute(builder: (context) => MainOrganizationScreenWrapper());
       case contactus:
-        return MaterialPageRoute(builder: (context) => Contactus());
+        return MaterialPageRoute(builder: (context) => ContactusWrapper());
       case Management:
-        return MaterialPageRoute(builder: (context) => ManagementScreenWrapper());
+        return MaterialPageRoute(
+          builder: (context) => ManagementScreenWrapper(),
+        );
       case settingspage:
         return MaterialPageRoute(builder: (context) => Settings());
       case Committees:
-        return MaterialPageRoute(builder: (context) => CommitteesPage());
+        return MaterialPageRoute(builder: (context) => CommitteesScreenWrapper());
 
       default:
         return MaterialPageRoute(

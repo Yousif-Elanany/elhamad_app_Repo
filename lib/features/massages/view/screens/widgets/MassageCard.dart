@@ -10,23 +10,21 @@ import '../../../../home/models/complainModel.dart';
 import '../../../../policy/views/widgets/makePolicyRequestDialog.dart';
 
 class massageCard extends StatefulWidget {
-  final int index;
-  final String complainant;
-  final String content;
-  final String date;
-  final String type;
+  final String id;
+  final String title;
   final String status;
-  final ComplaintModel model;
+  final String sentAt;
+  final String totalRecipients;
+  final List<String> channels;
 
   const massageCard({
     super.key,
-    required this.index,
-    required this.complainant,
-    required this.content,
-    required this.date,
-    required this.type,
+    required this.id,
+    required this.title,
     required this.status,
-    required this.model,
+    required this.sentAt,
+    required this.totalRecipients,
+    required this.channels,
   });
 
   @override
@@ -93,7 +91,7 @@ class _massageCardState extends State<massageCard> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "# : ${widget.index}",
+                  "# : ${widget.id}",
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -122,11 +120,11 @@ class _massageCardState extends State<massageCard> {
 
             const SizedBox(height: 10),
 
-            _buildRow("massage_content".tr(), widget.complainant),
-            _buildRow("Sent To".tr(), widget.content),
-            _buildRow("SendBy".tr(), widget.date),
-            _buildRow("SendStatus".tr(), widget.type),
-            _buildRow("Numberofunitsconsumed".tr(), widget.type),
+            _buildRow("massage_content".tr(), widget.title),
+            _buildRow("Sent To".tr(), widget.sentAt),
+            _buildRow("Numberofunitsconsumed".tr(), widget.totalRecipients),
+
+            _buildRow("SendStatus".tr(), widget.status),
 
 
           ],

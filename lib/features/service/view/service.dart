@@ -74,16 +74,16 @@ class ServicesPage extends StatelessWidget {
                   },
                 ),
 
-                _buildServiceCard(
-                  "employees".tr(),
-                  Icons.groups_outlined,
-                  24,
-                  () {
-
-                    Navigator.pushNamed(context, "/employees");
-
-                  },
-                ),
+                // _buildServiceCard(
+                //   "employees".tr(),
+                //   Icons.groups_outlined,
+                //   24,
+                //   () {
+                //
+                //     Navigator.pushNamed(context, "/employees");
+                //
+                //   },
+                // ),
                 _buildServiceCard(
                   "documentation".tr(),
                   Icons.assignment_outlined,

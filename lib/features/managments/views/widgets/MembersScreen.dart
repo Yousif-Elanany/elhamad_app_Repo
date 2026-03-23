@@ -1,14 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/network/cache_helper.dart';
 import '../../../../core/widgets/ActionIconButton.dart';
 import '../../../../core/widgets/chatDialog.dart';
 import '../../../../core/widgets/deleteDialog.dart';
+import '../../viewModel/management_cubit.dart';
 import 'AddMemberDialog.dart';
 
 class BoardMembersPage extends StatefulWidget {
-  const BoardMembersPage({super.key});
+  final String boardId;
+  final ManagementCubit cubit;
 
+  const BoardMembersPage({
+    super.key,
+    required this.boardId,
+    required this.cubit,
+  });
   @override
   State<BoardMembersPage> createState() => _BoardMembersPageState();
 }
@@ -29,6 +38,14 @@ class _BoardMembersPageState extends State<BoardMembersPage> {
 
   // مثال: قائمة الأعضاء
   final List<Map<String, String>> members = [];
+  @override
+  void initState() {
+    super.initState();
+    context.read<ManagementCubit>().getMembers(
+      CacheHelper.getData("companyId"),
+      widget.boardId,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +64,7 @@ class _BoardMembersPageState extends State<BoardMembersPage> {
             icon: const Icon(Icons.arrow_forward, color: Colors.black),
             onPressed: () {
               Navigator.pop(context);
+              widget.cubit.getDirectors(CacheHelper.getData("companyId"));
             },
           ),
         ],
@@ -79,16 +97,52 @@ class _BoardMembersPageState extends State<BoardMembersPage> {
             const SizedBox(height: 15),
 
             Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                //    if (showAddMemberForm) _buildAddMemberForm(),
+              child: BlocBuilder<ManagementCubit, ManagementState>(
+                builder: (context, state) {
+                  if (state is MembersLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-                    const SizedBox(height: 15),
+                  if (state is MembersFailure) {
+                    return Center(
+                      child: Text(
+                        "حدث خطأ: ${state.error}",
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    );
+                  }
 
-                    _buildMembersTable(),
-                  ],
-                ),
+                  if (state is MembersSuccess) {
+                    final members = state.data.items;
+
+                    if (members.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          "لا يوجد أعضاء",
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      );
+                    }
+
+                    return ListView.builder(
+                      itemCount: members.length,
+                      itemBuilder: (context, index) {
+                        final member = members[index];
+
+                        return _buildMemberCard({
+                          "name": member.name ?? "",
+                          "id": member.nationalId ?? "",
+                          "membershipType": member.membershipType ?? "",
+                          "jobTitle": member.jobTitle ?? "",
+                          "phone": member.phone ?? "",
+                          "email": member.email ?? "",
+                        });
+                      },
+                    );
+                  }
+
+                  return const SizedBox();
+                },
               ),
             ),
           ],
@@ -126,7 +180,18 @@ class _BoardMembersPageState extends State<BoardMembersPage> {
 
           const SizedBox(height: 10),
 
-          _buildActions(),
+          _buildActions(
+            () => ComplaintDetailsDialog.show(context),
+            () => showDialog(
+              context: context,
+              builder: (_) => ConfirmDeleteDialog(
+                onConfirm: () {
+                  Navigator.pop(context);
+                  // منطق الحذف هنا
+                },
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -161,17 +226,30 @@ class _BoardMembersPageState extends State<BoardMembersPage> {
     );
   }
 
-  Widget _buildActions() {
+  Widget _buildActions(void Function() onEditTap, void Function() onDeleteTap) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        IconButton(
-          icon: const Icon(Icons.edit, color: Colors.blue),
-          onPressed: () {},
+        Align(
+          alignment: Alignment.centerLeft,
+          child: ActionIconButton(
+            onTap: onEditTap,
+            icon: Icons.edit,
+            iconColor: Colors.blue,
+            backgroundColor: Colors.white,
+            borderColor: Colors.blue,
+          ),
         ),
-
-        IconButton(
-          icon: const Icon(Icons.delete, color: Colors.red),
-          onPressed: () {},
+        const SizedBox(width: 12),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: ActionIconButton(
+            onTap: onDeleteTap,
+            icon: Icons.delete,
+            iconColor: Colors.red,
+            backgroundColor: Colors.white,
+            borderColor: Colors.red,
+          ),
         ),
       ],
     );

@@ -10,26 +10,30 @@ import 'makePolicyRequestDialog.dart';
 
 class PolicyCard extends StatelessWidget {
   final int index;
-  final String complainant;
-  final String content;
+  final String companyName;
+  final String address;
+  final String notes;
+  final String Status;
+
+  final String makeRequest;
   final String date;
-  final String type;
-  final String status;
-  final ComplaintModel model;
+  final ComplaintModel? model;
 
   const PolicyCard({
     super.key,
     required this.index,
-    required this.complainant,
-    required this.content,
+    required this.companyName,
+    required this.address,
+    required this.Status,
+    required this.notes,
+    required this.makeRequest,
     required this.date,
-    required this.type,
-    required this.status,
-    required this.model,
+
+     this.model,
   });
 
   Color _statusColor() {
-    switch (status) {
+    switch (address) {
       case "جديد":
         return Colors.blue;
       case "قديم":
@@ -74,9 +78,9 @@ class PolicyCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    status,
+                    Status,
                     style: TextStyle(
-                      color: _statusColor(),
+                      color:Colors.black,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -86,11 +90,11 @@ class PolicyCard extends StatelessWidget {
 
             const SizedBox(height: 10),
 
-            _buildRow("address".tr(), complainant),
-            _buildRow("notes".tr(), content),
-            _buildRow("مقدم الطلب", date),
-            _buildRow("اسم الشركة", type),
-            _buildRow("تاريخ الإنشاء", type),
+            _buildRow("address".tr(), address),
+            _buildRow("notes".tr(), notes),
+            _buildRow("مقدم الطلب",  makeRequest),
+            _buildRow("اسم الشركة", companyName),
+            _buildRow("تاريخ الإنشاء", date),
 
             const SizedBox(height: 12),
 

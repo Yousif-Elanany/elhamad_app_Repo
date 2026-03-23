@@ -33,14 +33,14 @@ class ManagementScreen extends StatefulWidget {
 }
 
 class _ManagementScreenState extends State<ManagementScreen> {
-
   @override
   void initState() {
     super.initState();
-      print("🔥 ManagementScreen initState called");
+    print("🔥 ManagementScreen initState called");
     final cubit = context.read<ManagementCubit>();
     cubit.getDirectors(CacheHelper.getData("companyId"));
   }
+
   @override
   Widget build(BuildContext context) {
     return Directionality(
@@ -92,8 +92,12 @@ class _ManagementScreenState extends State<ManagementScreen> {
                       Expanded(
                         child: TabBarView(
                           children: [
-                            BoardTabContent(),
-                            ShareholdersTabContent(),
+                            BoardTabContent(
+                              cubit: context.read<ManagementCubit>(),
+                            ),
+                            ShareholdersTabContent(
+                              cubit: context.read<ManagementCubit>(),
+                            ),
                           ],
                         ),
                       ),

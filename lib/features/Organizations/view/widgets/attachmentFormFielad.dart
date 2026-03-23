@@ -2,7 +2,8 @@ import 'package:alhamd/core/constants/app_colors.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
-import '../../../localization_service.dart';
+import '../../../../localization_service.dart';
+
 
 Widget buildAttachmentField({
   bool isRequired = false,

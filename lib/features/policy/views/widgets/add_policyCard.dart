@@ -12,22 +12,19 @@ import 'makePolicyRequestDialog.dart';
 
 class AddPolicyCard extends StatelessWidget {
   final int index;
-  final String complainant;
-  final String content;
-  final String date;
-  final String type;
-  final String status;
-  final ComplaintModel model;
+  final String address;
+  final String bySomeOne;
+  final String creationDate;
+  final String status = "جديد"; // مثال، يمكنك تعديله حسب الحاجة
+
 
   const AddPolicyCard({
     super.key,
     required this.index,
-    required this.complainant,
-    required this.content,
-    required this.date,
-    required this.type,
-    required this.status,
-    required this.model,
+
+    required this.address,
+    required this.bySomeOne,
+    required this.creationDate,
   });
 
   Color _statusColor() {
@@ -88,9 +85,9 @@ class AddPolicyCard extends StatelessWidget {
 
             const SizedBox(height: 10),
 
-            _buildRow("address".tr(), complainant),
-            _buildRow("notes".tr(), content),
-            _buildRow("بواسطة", type),
+            _buildRow("address".tr(), address),
+            _buildRow("Creation date".tr(), creationDate),
+            _buildRow("BySomeOne".tr(), bySomeOne),
 
             const SizedBox(height: 12),
 
@@ -101,10 +98,12 @@ class AddPolicyCard extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: ActionIconButton(
-                    onTap: () => showDocumantationDialog(
-                      context,
-                      policyName: model.content,
-                    ) ,
+                    onTap: () {
+                      // showDocumantationDialog(
+                      //   context,
+                      //   policyName: model.content,
+                      // )
+                    } ,
                     icon: Icons.remove_red_eye_rounded,
                     iconColor: AppColors.primaryOlive,
                     backgroundColor: AppColors.primaryOlive.withOpacity(.1),

@@ -3,6 +3,8 @@ import 'package:alhamd/features/managments/Models/DiewctorModel.dart';
 import 'package:alhamd/features/managments/Models/MemberModel.dart';
 import 'package:alhamd/features/managments/services/management_Remote_Data_Source.dart';
 
+import '../Models/ShareHolderResponse.dart';
+
 class ManagementRepository implements ManagementRemoteDataSource {
   final ManagementRemoteDataSource remote;
 
@@ -19,7 +21,7 @@ class ManagementRepository implements ManagementRemoteDataSource {
   }
 
   @override
-  Future<Map<String, dynamic>> getShareHolders() {
-    return remote.getShareHolders();
+  Future<ShareHoldersResponseModel> getShareHolders(String companyId) {
+    return remote.getShareHolders(companyId);
   }
 }

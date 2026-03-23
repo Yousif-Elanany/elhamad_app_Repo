@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../localization_service.dart';
-import '../../../Organizations/widgets/ComplainDetail.dart';
 import '../../../compaines/views/widgets/addComplain.dart';
 import '../../../home/models/complainModel.dart';
 import '../../../drawer/appdrawer.dart';
@@ -177,13 +176,14 @@ class _DocumantationScreenState extends State<DocumantationScreen>
                           padding:
                           const EdgeInsets.only(bottom: 12),
                           child: AddPolicyCard(
-                            model: item,
+                       //     model: item,
                             index: item.id,
-                            complainant: item.complainant,
-                            content: item.content,
-                            date: item.date,
-                            type: item.type,
-                            status: item.status,
+                      //      complainant: item.complainant,
+                      //       content: item.content,
+                      //       date: item.date,
+                      //       type: item.type,
+                      //       status: item.status,
+                            address: '', bySomeOne: '', creationDate: '',
                           ),
                         );
                       },

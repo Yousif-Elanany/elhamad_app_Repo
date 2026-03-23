@@ -1,13 +1,33 @@
+import 'package:alhamd/features/Tasks/screen/widgets/TaskWidget.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hijri/hijri_calendar.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/network/cache_helper.dart';
 import '../../../core/network/handleErrors/ValidationClass.dart';
 import '../../../core/widgets/TextForm.dart';
 import '../../Organizations/model/organization_model.dart';
-import '../../Organizations/widgets/StepCircle.dart';
 import '../../../localization_service.dart';
+import '../../Organizations/view/widgets/ComplainDetail.dart';
+import '../../Organizations/view/widgets/StepCircle.dart';
+import '../repos/TaskRepo.dart';
+import '../services/Task_Remote_Data_Source.dart';
+import '../viewModel/missions_cubit.dart';
+
+class TasksWrapper extends StatelessWidget {
+  const TasksWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) =>
+          MissionsCubit(MissionsRepository(MissionsRemoteDataSource())),
+      child: const TasksScreen(),
+    );
+  }
+}
 
 class TasksScreen extends StatefulWidget {
   const TasksScreen({super.key});
@@ -55,17 +75,27 @@ class _TasksScreenState extends State<TasksScreen> {
       final hijri = HijriCalendar.fromDate(picked);
 
       const hijriMonths = [
-        'محرم', 'صفر', 'ربيع الأول', 'ربيع الثاني',
-        'جمادى الأولى', 'جمادى الآخرة', 'رجب', 'شعبان',
-        'رمضان', 'شوال', 'ذو القعدة', 'ذو الحجة',
+        'محرم',
+        'صفر',
+        'ربيع الأول',
+        'ربيع الثاني',
+        'جمادى الأولى',
+        'جمادى الآخرة',
+        'رجب',
+        'شعبان',
+        'رمضان',
+        'شوال',
+        'ذو القعدة',
+        'ذو الحجة',
       ];
 
       final monthName = hijriMonths[hijri.hMonth - 1];
 
       _dateControllerHijri.text =
-      "${hijri.hDay.toString().padLeft(2, '0')} $monthName ${hijri.hYear}";
+          "${hijri.hDay.toString().padLeft(2, '0')} $monthName ${hijri.hYear}";
     }
   }
+
   Future<void> _selectHijriDateend() async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -78,17 +108,27 @@ class _TasksScreenState extends State<TasksScreen> {
       final hijri = HijriCalendar.fromDate(picked);
 
       const hijriMonths = [
-        'محرم', 'صفر', 'ربيع الأول', 'ربيع الثاني',
-        'جمادى الأولى', 'جمادى الآخرة', 'رجب', 'شعبان',
-        'رمضان', 'شوال', 'ذو القعدة', 'ذو الحجة',
+        'محرم',
+        'صفر',
+        'ربيع الأول',
+        'ربيع الثاني',
+        'جمادى الأولى',
+        'جمادى الآخرة',
+        'رجب',
+        'شعبان',
+        'رمضان',
+        'شوال',
+        'ذو القعدة',
+        'ذو الحجة',
       ];
 
       final monthName = hijriMonths[hijri.hMonth - 1];
 
       _dateControllerHijriend.text =
-      "${hijri.hDay.toString().padLeft(2, '0')} $monthName ${hijri.hYear}";
+          "${hijri.hDay.toString().padLeft(2, '0')} $monthName ${hijri.hYear}";
     }
   }
+
   String? _sendVia;
 
   String? selectedDateTimeText;
@@ -98,7 +138,8 @@ class _TasksScreenState extends State<TasksScreen> {
   @override
   void initState() {
     super.initState();
-    organizationsBox = Hive.box<Organization>('organizations');
+    final cubit = context.read<MissionsCubit>();
+    cubit.getMissions(CacheHelper.getData("companyId"));
   }
 
   // Detect Language and Direction
@@ -206,6 +247,7 @@ class _TasksScreenState extends State<TasksScreen> {
       },
     );
   }
+
   void _filterData() {
     // 🔥 هنا تحط فلترة الـ List حسب fromDate و toDate
 
@@ -214,6 +256,7 @@ class _TasksScreenState extends State<TasksScreen> {
 
     setState(() {});
   }
+
   Widget _buildTabContent() {
     switch (selectedTabIndex) {
       case 0:
@@ -228,6 +271,7 @@ class _TasksScreenState extends State<TasksScreen> {
         return const SizedBox();
     }
   }
+
   Widget _buildDateSelector({
     required String label,
     required DateTime? selectedDate,
@@ -239,7 +283,7 @@ class _TasksScreenState extends State<TasksScreen> {
         SizedBox(height: 12),
         Text(
           label,
-          style:  TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.bold,
             color: AppColors.primaryOlive,
@@ -270,7 +314,6 @@ class _TasksScreenState extends State<TasksScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 // /// 🔵 Label
                 // Text(
                 //   label,
@@ -306,6 +349,7 @@ class _TasksScreenState extends State<TasksScreen> {
       ],
     );
   }
+
   Future<void> _showFilterDialog() async {
     DateTime? tempFrom = fromDate;
     DateTime? tempTo = toDate;
@@ -325,7 +369,6 @@ class _TasksScreenState extends State<TasksScreen> {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-
                   Divider(color: AppColors.primaryOlive),
 
                   /// 🔵 من تاريخ
@@ -355,10 +398,8 @@ class _TasksScreenState extends State<TasksScreen> {
               ),
 
               actions: [
-
                 Row(
                   children: [
-
                     /// 🔴 إلغاء
                     Expanded(
                       child: OutlinedButton(
@@ -420,6 +461,7 @@ class _TasksScreenState extends State<TasksScreen> {
       },
     );
   }
+
   Widget _buildTasksTabs() {
     return Row(
       children: List.generate(3, (index) {
@@ -587,52 +629,52 @@ class _TasksScreenState extends State<TasksScreen> {
         children: [
           _buildStepper(1),
           const SizedBox(height: 25),
-        Row(
-          children: [
-            Expanded(
-              child: _buildField(
-                label: "TaskType".tr(),
-                hint: "enter_action".tr(),
-                controller: actionController,
-                isRequired: true,
+          Row(
+            children: [
+              Expanded(
+                child: _buildField(
+                  label: "TaskType".tr(),
+                  hint: "enter_action".tr(),
+                  controller: actionController,
+                  isRequired: true,
+                ),
               ),
-            ),
-            const SizedBox(width: 15),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _FormLabel(label: 'SECRET'.tr(), required: true),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _RadioOption(
-                        label: 'Sms'.tr(),
-                        value: 'sms',
-                        groupValue: _sendVia,
-                        onChanged: (v) {
-                          setModalState(() {
-                            _sendVia = v;
-                          });
-                        },
-                      ),
-                      _RadioOption(
-                        label: 'phone'.tr(),
-                        value: 'app',
-                        groupValue: _sendVia,
-                        onChanged: (v) {
-                          setModalState(() {
-                            _sendVia = v;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                ],
+              const SizedBox(width: 15),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _FormLabel(label: 'SECRET'.tr(), required: true),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _RadioOption(
+                          label: 'Sms'.tr(),
+                          value: 'sms',
+                          groupValue: _sendVia,
+                          onChanged: (v) {
+                            setModalState(() {
+                              _sendVia = v;
+                            });
+                          },
+                        ),
+                        _RadioOption(
+                          label: 'phone'.tr(),
+                          value: 'app',
+                          groupValue: _sendVia,
+                          onChanged: (v) {
+                            setModalState(() {
+                              _sendVia = v;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
           Row(
             children: [
               Expanded(
@@ -658,7 +700,7 @@ class _TasksScreenState extends State<TasksScreen> {
                     color: Colors.grey,
                   ),
                   validator: (v) =>
-                  (v == null || v.isEmpty) ? 'هذا الحقل مطلوب' : null,
+                      (v == null || v.isEmpty) ? 'هذا الحقل مطلوب' : null,
                 ),
               ),
               // Expanded(
@@ -695,7 +737,7 @@ class _TasksScreenState extends State<TasksScreen> {
                     color: Colors.grey,
                   ),
                   validator: (v) =>
-                  (v == null || v.isEmpty) ? 'هذا الحقل مطلوب' : null,
+                      (v == null || v.isEmpty) ? 'هذا الحقل مطلوب' : null,
                 ),
               ),
             ],
@@ -831,15 +873,28 @@ class _TasksScreenState extends State<TasksScreen> {
             children: [
               _buildReviewRow("TaskType".tr(), actionController.text),
               _buildReviewRow("SECRET".tr(), _sendVia ?? ""),
-              _buildReviewRow("Creation date".tr(), _dateControllerMeladend.text),
-              _buildReviewRow("Date of creation (Hijri)".tr(), _dateControllerHijri.text),
+              _buildReviewRow(
+                "Creation date".tr(),
+                _dateControllerMeladend.text,
+              ),
+              _buildReviewRow(
+                "Date of creation (Hijri)".tr(),
+                _dateControllerHijri.text,
+              ),
               _buildReviewRow("due date".tr(), _dateControllerMelad.text),
-              _buildReviewRow("Due date (Hijri)".tr(), _dateControllerHijriend.text),
+              _buildReviewRow(
+                "Due date (Hijri)".tr(),
+                _dateControllerHijriend.text,
+              ),
               _buildReviewRow("Project name".tr(), actionController.text),
               _buildReviewRow("Assignments".tr(), nameController.text),
               _buildReviewRow("Priority".tr(), nameController.text),
               _buildReviewRow("Details".tr(), notesController.text),
-              _buildReviewRow("attachments".tr(), selectedFile?.name ?? "", isLink: true),
+              _buildReviewRow(
+                "attachments".tr(),
+                selectedFile?.name ?? "",
+                isLink: true,
+              ),
 
               const SizedBox(height: 10),
               Container(
@@ -989,95 +1044,95 @@ class _TasksScreenState extends State<TasksScreen> {
           /// 🔄 Dropdown or TextField
           isDropdown
               ? DropdownButtonFormField<String>(
-            value: controller.text.isEmpty ? null : controller.text,
-            items: items
-                ?.map(
-                  (item) => DropdownMenuItem<String>(
-                value: item,
-                child: Text(item),
-              ),
-            )
-                .toList(),
-            onChanged: (value) {
-              controller.text = value ?? '';
-            },
-            validator: (value) {
-              return SmartValidator.validate(
-                value,
-                fieldName: label,
-                required: isRequired,
-              );
-            },
-            decoration: InputDecoration(
-              hintText: hint,
-              filled: true,
-              fillColor: isHighlighted
-                  ? primaryOlive.withOpacity(0.08)
-                  : Colors.white,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 10,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(
-                  color: isHighlighted
-                      ? primaryOlive
-                      : Colors.grey.shade300,
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: primaryOlive, width: 1.5),
-              ),
-            ),
-          )
+                  value: controller.text.isEmpty ? null : controller.text,
+                  items: items
+                      ?.map(
+                        (item) => DropdownMenuItem<String>(
+                          value: item,
+                          child: Text(item),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) {
+                    controller.text = value ?? '';
+                  },
+                  validator: (value) {
+                    return SmartValidator.validate(
+                      value,
+                      fieldName: label,
+                      required: isRequired,
+                    );
+                  },
+                  decoration: InputDecoration(
+                    hintText: hint,
+                    filled: true,
+                    fillColor: isHighlighted
+                        ? primaryOlive.withOpacity(0.08)
+                        : Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(
+                        color: isHighlighted
+                            ? primaryOlive
+                            : Colors.grey.shade300,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: primaryOlive, width: 1.5),
+                    ),
+                  ),
+                )
               : TextFormField(
-            controller: controller,
-            maxLines: maxLines,
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            textAlign: isAr ? TextAlign.right : TextAlign.left,
-            validator: (value) {
-              return SmartValidator.validate(
-                value,
-                fieldName: label,
-                required: isRequired,
-              );
-            },
-            onChanged: (value) {
-              _formKey.currentState?.validate();
-            },
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: const TextStyle(
-                fontSize: 11,
-                color: Colors.grey,
-              ),
-              suffixIcon: suffixIcon != null
-                  ? Icon(suffixIcon, size: 18)
-                  : null,
-              filled: true,
-              fillColor: isHighlighted
-                  ? primaryOlive.withOpacity(0.08)
-                  : Colors.white,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 10,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(
-                  color: isHighlighted
-                      ? primaryOlive
-                      : Colors.grey.shade300,
+                  controller: controller,
+                  maxLines: maxLines,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  textAlign: isAr ? TextAlign.right : TextAlign.left,
+                  validator: (value) {
+                    return SmartValidator.validate(
+                      value,
+                      fieldName: label,
+                      required: isRequired,
+                    );
+                  },
+                  onChanged: (value) {
+                    _formKey.currentState?.validate();
+                  },
+                  decoration: InputDecoration(
+                    hintText: hint,
+                    hintStyle: const TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey,
+                    ),
+                    suffixIcon: suffixIcon != null
+                        ? Icon(suffixIcon, size: 18)
+                        : null,
+                    filled: true,
+                    fillColor: isHighlighted
+                        ? primaryOlive.withOpacity(0.08)
+                        : Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(
+                        color: isHighlighted
+                            ? primaryOlive
+                            : Colors.grey.shade300,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: primaryOlive, width: 1.5),
+                    ),
+                  ),
                 ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: primaryOlive, width: 1.5),
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -1163,8 +1218,8 @@ class _TasksScreenState extends State<TasksScreen> {
                     color: state.hasError
                         ? Colors.red
                         : (selectedFile != null
-                        ? primaryOlive
-                        : Colors.grey.shade300),
+                              ? primaryOlive
+                              : Colors.grey.shade300),
                     width: selectedFile != null ? 1.5 : 1,
                   ),
                   borderRadius: BorderRadius.circular(8),
@@ -1293,7 +1348,6 @@ class _TasksScreenState extends State<TasksScreen> {
       context: context,
       isScrollControlled: true,
 
-
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -1331,7 +1385,8 @@ class _TasksScreenState extends State<TasksScreen> {
 
                   const SizedBox(height: 10),
 
-                  Expanded( // 👈 مهم عشان المحتوى يتمدد جوه الـ 80%
+                  Expanded(
+                    // 👈 مهم عشان المحتوى يتمدد جوه الـ 80%
                     child: SingleChildScrollView(
                       child: Column(
                         children: [
@@ -1370,6 +1425,7 @@ class _TasksScreenState extends State<TasksScreen> {
 
     return "إلى ${toDate!.toString().split(" ").first}";
   }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -1387,9 +1443,8 @@ class _TasksScreenState extends State<TasksScreen> {
               onPressed: () {
                 Navigator.pop(context);
               },
-      
+
               icon: const Icon(Icons.arrow_forward, color: Colors.black),
-              tooltip: "request_meeting".tr(),
             ),
           ],
         ),
@@ -1432,7 +1487,7 @@ class _TasksScreenState extends State<TasksScreen> {
                   ],
                 ),
                 const SizedBox(height: 15),
-      
+
                 // Align(
                 //   alignment: Alignment.centerRight,
                 //   child: GestureDetector(
@@ -1473,16 +1528,60 @@ class _TasksScreenState extends State<TasksScreen> {
                 //       ),
                 //     ),
                 //   ),
-                // ),
-                const SizedBox(height: 15),
-      
-                /// 🔥 هنا نحط التابات
-                _buildTasksTabs(),
-      
+                // // ),
+                // const SizedBox(height: 15),
+                //
+                // /// 🔥 هنا نحط التابات
+                // _buildTasksTabs(),
                 const SizedBox(height: 10),
-      
+
                 /// 🔥 المحتوى
-                Expanded(child: _buildTabContent()),
+                Expanded(
+                  child: BlocBuilder<MissionsCubit, MissionsState>(
+                    builder: (context, state) {
+                      if (state is MissionsError) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      if (state is MissionsError) {
+                        return Center(
+                          child: Text(
+                            "حدث خطأ: ${state.message}",
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                        );
+                      }
+
+                      if (state is MissionsSuccess) {
+                        final complaints = state.missions.items;
+
+                        if (complaints.isEmpty) {
+                          return const Center(
+                            child: Text(
+                              "لا توجد مهام",
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          );
+                        }
+
+                        return ListView.builder(
+                          padding: const EdgeInsets.all(12),
+                          itemCount: complaints.length,
+                          itemBuilder: (context, index) {
+                            final item = complaints[index];
+
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: Text(" قريبا"),
+                            );
+                          },
+                        );
+                      }
+
+                      return const SizedBox();
+                    },
+                  ),
+                ),
               ],
             ),
           ),
@@ -1491,6 +1590,7 @@ class _TasksScreenState extends State<TasksScreen> {
     );
   }
 }
+
 class _RadioOption extends StatelessWidget {
   final String label;
   final String value;
@@ -1509,7 +1609,7 @@ class _RadioOption extends StatelessWidget {
     return GestureDetector(
       onTap: () => onChanged(value),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12,horizontal: 6),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
         decoration: BoxDecoration(
           border: Border.all(color: AppColors.primaryOlive),
           borderRadius: BorderRadius.circular(6),
@@ -1536,6 +1636,7 @@ class _RadioOption extends StatelessWidget {
     );
   }
 }
+
 class _FormLabel extends StatelessWidget {
   final String label;
   final bool required;
@@ -1546,7 +1647,6 @@ class _FormLabel extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
-
         Text(
           label,
           style: const TextStyle(
@@ -1568,4 +1668,3 @@ class _FormLabel extends StatelessWidget {
     );
   }
 }
-

@@ -1,12 +1,16 @@
 import 'package:alhamd/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/network/cache_helper.dart';
 import '../../../../core/widgets/ActionIconButton.dart';
 import '../../../../core/widgets/chatDialog.dart';
+import '../../viewModel/management_cubit.dart';
 import 'AddShareholderDialog.dart';
 
 class ShareholdersTabContent extends StatefulWidget {
-  const ShareholdersTabContent({super.key});
+  final ManagementCubit cubit;
+  const ShareholdersTabContent({super.key, required this.cubit});
 
   @override
   State<ShareholdersTabContent> createState() => _ShareholdersTabContentState();
@@ -15,6 +19,11 @@ class ShareholdersTabContent extends StatefulWidget {
 class _ShareholdersTabContentState extends State<ShareholdersTabContent> {
   final Color primaryGreen = const Color(0xFF8B8B6B);
   final Color lightGrey = const Color(0xFFF5F5F5);
+  @override
+  void initState() {
+    super.initState();
+      widget.cubit.getShareHolders(CacheHelper.getData("companyId"));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,54 +92,59 @@ class _ShareholdersTabContentState extends State<ShareholdersTabContent> {
 
               // الجدول الرئيسي (يبقى كما هو لأنه داخل SingleChildScrollView أفقي)
               Expanded(
-                child: ListView(
-                  children: [
-                    _buildShareholderCard(
-                      "1",
-                      "9874521569",
-                      "مساهم اول",
-                      "فرد",
-                      "75",
-                      "75",
-                      "سهم شراء",
-                    ),
-                    _buildShareholderCard(
-                      "1",
-                      "9874521569",
-                      "مساهم اول",
-                      "فرد",
-                      "75",
-                      "75",
-                      "سهم شراء",
-                    ),
-                    _buildShareholderCard(
-                      "1",
-                      "9874521569",
-                      "مساهم اول",
-                      "فرد",
-                      "75",
-                      "75",
-                      "سهم شراء",
-                    ),      _buildShareholderCard(
-                      "1",
-                      "9874521569",
-                      "مساهم اول",
-                      "فرد",
-                      "75",
-                      "75",
-                      "سهم شراء",
-                    ),
+                child: BlocBuilder<ManagementCubit, ManagementState>(
+                  builder: (context, state) {
 
-                    _buildShareholderCard(
-                      "2",
-                      "3698523656",
-                      "مساهم تاني",
-                      "فرد",
-                      "25",
-                      "25",
-                      "سهم بيع",
-                    ),
-                  ],
+                    if (state is ShareHoldersLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (state is ShareHoldersFailure) {
+                      return Center(
+                        child: Text(
+                          "حدث خطأ: ${state.error}",
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      );
+                    }
+
+                    if (state is ShareHoldersSuccess) {
+
+                      final shareholders = state.data.items; // حسب الموديل
+
+                      if (shareholders.isEmpty) {
+                        return const Center(
+                          child: Text(
+                            "لا يوجد مساهمين",
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        );
+                      }
+
+                      return ListView.builder(
+                        itemCount: shareholders.length,
+                        itemBuilder: (context, index) {
+
+                          final shareholder = shareholders[index];
+
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: _buildShareholderCard(
+                              shareholder.id.toString(),
+                              shareholder.nationalId ?? '',
+                              shareholder.name ?? '',
+                              shareholder.type ?? '',
+                              shareholder.sharesCount.toString(),
+                              shareholder.sharesPercentage.toString(),
+                              shareholder.operationType ?? '',
+                            ),
+                          );
+                        },
+                      );
+                    }
+
+                    return const SizedBox();
+                  },
                 ),
               ),
 

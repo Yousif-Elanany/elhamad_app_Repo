@@ -4,6 +4,7 @@ import 'package:meta/meta.dart';
 
 import '../Models/DiewctorModel.dart';
 import '../Models/MemberModel.dart';
+import '../Models/ShareHolderResponse.dart';
 
 part 'management_state.dart';
 
@@ -23,7 +24,7 @@ class ManagementCubit extends Cubit<ManagementState> {
     }
   }
 
-// ─── Members ─────────────────────────────────────────
+  // ─── Members ─────────────────────────────────────────
   Future<void> getMembers(String companyId, String boardId) async {
     try {
       emit(MembersLoading());
@@ -34,11 +35,11 @@ class ManagementCubit extends Cubit<ManagementState> {
     }
   }
 
-// ─── ShareHolders ─────────────────────────────────────
-  Future<void> getShareHolders() async {
+  // ─── ShareHolders ─────────────────────────────────────
+  Future<void> getShareHolders(String companyId) async {
     try {
       emit(ShareHoldersLoading());
-      final data = await repository.getShareHolders();
+      final data = await repository.getShareHolders(companyId);
       emit(ShareHoldersSuccess(data));
     } catch (e) {
       emit(ShareHoldersFailure(e.toString()));

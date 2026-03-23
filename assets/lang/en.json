@@ -198,6 +198,8 @@
   "employee_position": "Employee Position",
   "employee_department": "Employee Department",
   "employee_status": "Employee Status",
-  "add_Permissions": "Add Permissions"
+  "add_Permissions": "Add Permissions",
+  "JobTitle": "Job Title",
+  "BySomeOne":  "By"
 
 }

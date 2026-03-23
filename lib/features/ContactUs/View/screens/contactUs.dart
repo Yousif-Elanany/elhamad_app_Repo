@@ -1,13 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/network/cache_helper.dart';
 import '../../../../localization_service.dart';
-import '../../../Organizations/widgets/ComplainDetail.dart';
+import '../../../Organizations/view/widgets/ComplainDetail.dart';
 import '../../../compaines/views/widgets/addComplain.dart';
 import '../../../home/models/complainModel.dart';
 import '../../../drawer/appdrawer.dart';
+import '../../Repos/contactUs.dart';
+import '../../Services/Contact_Remote_Data_Source.dart';
+import '../../viewModel/contact_us_cubit.dart';
 // تأكد من استيراد الـ extension الخاص بك
 // import 'path_to_localization/localization_service.dart';
+class ContactusWrapper extends StatelessWidget {
+  const ContactusWrapper({super.key});
 
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => ContactUsCubit(ContactRepository(ContactRemoteDataSource())),
+      child: const Contactus(),
+    );
+  }
+}
 class Contactus extends StatefulWidget {
   const Contactus({super.key});
 
@@ -34,7 +49,12 @@ class _ContactusState extends State<Contactus> {
       status: "جديد",
     ),
   ];
-
+  @override
+  void initState() {
+    super.initState();
+  final cubit =  context.read<ContactUsCubit>();
+    cubit.getComplaints(CacheHelper.getData("companyId"));
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -96,23 +116,60 @@ class _ContactusState extends State<Contactus> {
               ],
             ),
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.all(12),
-                itemCount: complaints.length,
-                itemBuilder: (context, index) {
-                  final item = complaints[index];
+              child: BlocBuilder<ContactUsCubit, ContactUsState>(
+                builder: (context, state) {
 
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: ComplaintCard(
-                      index: item.id,
-                      complainant: item.complainant,
-                      content: item.content,
-                      date: item.date,
-                      type: item.type,
-                      status: item.status,
-                    ),
-                  );
+                  if (state is ContactUsLoading) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+
+                  if (state is ContactUsFailure) {
+                    return Center(
+                      child: Text(
+                        "حدث خطأ: ${state.error}",
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    );
+                  }
+
+                  if (state is ContactUsSuccess) {
+
+                    final complaints = state.data.items;
+
+                    if (complaints.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          "لا توجد شكاوى",
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      );
+                    }
+
+                    return ListView.builder(
+                      padding: const EdgeInsets.all(12),
+                      itemCount: complaints.length,
+                      itemBuilder: (context, index) {
+
+                        final item = complaints[index];
+
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: ComplaintCard(
+                            index: item.complaintNumber,
+                            complainant: item.createdByName ?? '',
+                            content: item.complaintText?? '',
+                            date: item.createdAt.toString() ?? '',
+                            type: item.type ?? '',
+                            status: item.status ?? '',
+                          ),
+                        );
+                      },
+                    );
+                  }
+
+                  return const SizedBox();
                 },
               ),
             ),

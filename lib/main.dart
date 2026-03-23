@@ -46,7 +46,7 @@ class MyApp extends StatelessWidget {
 
         return MaterialApp(
           debugShowCheckedModeBanner: false,
-          initialRoute: AppRoutes.login,
+          initialRoute: AppRoutes.splash,
           navigatorKey: navigatorKey,
           onGenerateRoute: AppRoutes.onGenerateRoute,
           locale: Locale(isArabic ? 'ar' : 'en'),

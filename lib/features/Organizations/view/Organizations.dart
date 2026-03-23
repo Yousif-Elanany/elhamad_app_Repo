@@ -1,15 +1,22 @@
+import 'package:alhamd/features/Organizations/view/widgets/OrganizationWidget.dart';
+import 'package:alhamd/features/Organizations/view/widgets/StepCircle.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' ;
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/network/cache_helper.dart';
 import '../../../core/network/handleErrors/ValidationClass.dart';
+import '../../managments/views/widgets/MembersScreen.dart';
+import '../../managments/views/widgets/managmentWidget.dart';
+import '../ViewModel/organization_cubit.dart';
 import '../model/organization_model.dart';
 import '../../../localization_service.dart';
-import '../widgets/OrganizationCard.dart';
-import '../widgets/StepCircle.dart';
 
 class Organizations extends StatefulWidget {
-  const Organizations({super.key});
+  final OrganizationCubit cubit;
+  const Organizations({super.key, required this.cubit});
 
   @override
   State<Organizations> createState() => _OrganizationsState();
@@ -42,13 +49,14 @@ class _OrganizationsState extends State<Organizations> {
   @override
   void initState() {
     super.initState();
-    organizationsBox = Hive.box<Organization>('organizations');
+    widget.cubit.getCompanyMeetings(CacheHelper.getData("companyId"));
+
+
   }
 
   // Detect Language and Direction
   bool get isAr => LocalizationService.getLang() == 'ar';
 
-  TextDirection get _dir => isAr ? TextDirection.rtl : TextDirection.ltr;
   Widget _buildDateField({
     required String label,
     required TextEditingController controller,
@@ -161,11 +169,11 @@ class _OrganizationsState extends State<Organizations> {
   Widget _buildTabContent() {
     switch (selectedTabIndex) {
       case 0:
-        return const Center(child: Text("بانتظار الرد"));
+        return const Center(child: Text(  "قادم "));
       case 1:
-        return const Center(child: Text("تم الموافقة"));
+        return const Center(child: Text( "جارية"));
       case 2:
-        return const Center(child: Text("تم الرفض"));
+        return const Center(child: Text("مكتملة"));
       case 3:
         return const Center(child: Text("ملغاة"));
       default:
@@ -367,7 +375,7 @@ class _OrganizationsState extends State<Organizations> {
   Widget _buildTabs() {
     return Row(
       children: List.generate(4, (index) {
-        final titles = ["بانتظار الرد", "تم الموافقة", "تم الرفض", "ملغاة"];
+        final titles = ["قادم ", "جارية", "مكتملة", "ملغاة"];
 
         final isSelected = selectedTabIndex == index;
 
@@ -1105,44 +1113,41 @@ class _OrganizationsState extends State<Organizations> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) => Directionality(
-          textDirection: _dir,
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: 20,
-              right: 20,
-              top: 15,
-              bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "request_meeting".tr(),
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+        builder: (context, setModalState) => Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 15,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "request_meeting".tr(),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
-                      IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.close),
-                      ),
-                    ],
-                  ),
-                  // const Divider(),
-                  if (currentStep == 1)
-                    _buildStep1(setModalState)
-                  else if (currentStep == 2)
-                    _buildStep2(setModalState)
-                  else
-                    _buildStep3(),
-                ],
-              ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+                // const Divider(),
+                if (currentStep == 1)
+                  _buildStep1(setModalState)
+                else if (currentStep == 2)
+                  _buildStep2(setModalState)
+                else
+                  _buildStep3(),
+              ],
             ),
           ),
         ),
@@ -1169,116 +1174,165 @@ class _OrganizationsState extends State<Organizations> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text("organizations".tr()),
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        leading: SizedBox(),
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
+      // appBar: AppBar(
+      //   title: Text("organizations".tr()),
+      //   centerTitle: true,
+      //   elevation: 0,
+      //   backgroundColor: Colors.white,
+      //   foregroundColor: Colors.black,
+      //   leading: SizedBox(),
+      //   actions: [
+      //     IconButton(
+      //       onPressed: () {
+      //         Navigator.pop(context);
+      //       },
+      //
+      //       icon: const Icon(Icons.arrow_forward, color: Colors.black),
+      //       tooltip: "request_meeting".tr(),
+      //     ),
+      //   ],
+      // ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
 
-            icon: const Icon(Icons.arrow_forward, color: Colors.black),
-            tooltip: "request_meeting".tr(),
+            // Align(
+            //   alignment: Alignment.centerRight,
+            //   child: GestureDetector(
+            //     onTap: _showFilterDialog,
+            //     child: Container(
+            //      // width: double.infinity,
+            //       padding: const EdgeInsets.symmetric(
+            //         horizontal: 14,
+            //         vertical: 8,
+            //       ),
+            //       decoration: BoxDecoration(
+            //         color: Colors.white,
+            //         border: Border.all(color: primaryOlive),
+            //         borderRadius: BorderRadius.circular(8),
+            //       ),
+            //       child: Row(
+            //         mainAxisSize: MainAxisSize.min,
+            //         children: [
+            //
+            //           /// 🔵 النص اللي بيعرض الفترة
+            //           Text(
+            //             _getFilterText(),
+            //             style: TextStyle(
+            //               color: primaryOlive,
+            //               fontSize: 12,
+            //               fontWeight: FontWeight.bold,
+            //             ),
+            //           ),
+            //
+            //           const SizedBox(width: 6),
+            //
+            //           Icon(
+            //             Icons.filter_list,
+            //             size: 18,
+            //             color: primaryOlive,
+            //           ),
+            //         ],
+            //       ),
+            //     ),
+            //   ),
+            // ),
+            const SizedBox(height: 15),
+
+            /// 🔥 هنا نحط التابات
+      //      _buildTabs(),
+          Expanded(
+            child: BlocBuilder<OrganizationCubit, OrganizationState>(
+              builder: (context, state) {
+
+                /// 🔄 Loading
+                if (state is GetMeetingsLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                /// ❌ Error
+                if (state is GetMeetingsError) {
+                  return Center(
+                    child: Text(
+                      "حدث خطأ: ${state.error}",
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  );
+                }
+
+                /// ✅ Success
+                if (state is GetMeetingsSuccess) {
+                  final meetings = state.data.items ?? []; // حسب الموديل عندك
+
+                  /// 🟡 Empty
+                  if (meetings.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        "لا يوجد اجتماعات",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    );
+                  }
+
+                  /// 📋 List
+                  return ListView.separated(
+                    padding: const EdgeInsets.all(12),
+                    itemCount: meetings.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    itemBuilder: (context, index) {
+                      final meeting = meetings[index];
+
+                      return OrganizationWidget(
+                        caseName: meeting.id?.toString() ?? '',
+
+                        startDate: meeting.startTime != null
+                            ? DateFormat('yyyy/MM/dd').format(meeting.startTime!)
+                            : '',
+
+                        endDate: meeting.createdAt != null
+                            ? DateFormat('yyyy/MM/dd').format(meeting.createdAt!)
+                            : '',
+
+                        boardMembers: meeting.id?.toString() ?? '0',
+                        activeMembers: meeting.id?.toString() ?? '0',
+                        availableSeats: meeting.id?.toString() ?? '0',
+
+                        status:  "نشط" ,
+
+                        onViewTap: () {
+                          // TODO: تفاصيل الاجتماع
+                        },
+
+                        onGroupTap: () {
+                          // Navigator.push(
+                          //   context,
+                          //   MaterialPageRoute(
+                          //     builder: (_) => BlocProvider.value(
+                          //       value: context.read<OrganizationCubit>(),
+                          //       child: BoardMembersPage(
+                          //         boardId: meeting.id?.toString() ?? '',
+                          //         cubit: context.read<OrganizationCubit>(),
+                          //       ),
+                          //     ),
+                          //   ),
+                          // );
+                        },
+                      );
+                    },
+                  );
+                }
+
+                return const SizedBox();
+              },
+            ),
           ),
-        ],
-      ),
-      body: Directionality(
-        textDirection: _dir,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              /// ✅ الصف الأول (الزر + لو عايز عناصر تانية)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _showAddOrganizationSheet,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryOlive,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      icon: const Icon(
-                        Icons.add,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-                      label: Text(
-                        "request_meeting".tr(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 15),
 
-              Align(
-                alignment: Alignment.centerRight,
-                child: GestureDetector(
-                  onTap: _showFilterDialog,
-                  child: Container(
-                   // width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border.all(color: primaryOlive),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
+        //    const SizedBox(height: 10),
 
-                        /// 🔵 النص اللي بيعرض الفترة
-                        Text(
-                          _getFilterText(),
-                          style: TextStyle(
-                            color: primaryOlive,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-
-                        const SizedBox(width: 6),
-
-                        Icon(
-                          Icons.filter_list,
-                          size: 18,
-                          color: primaryOlive,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 15),
-
-              /// 🔥 هنا نحط التابات
-              _buildTabs(),
-
-              const SizedBox(height: 10),
-
-              /// 🔥 المحتوى
-              Expanded(child: _buildTabContent()),
-            ],
-          ),
+            /// 🔥 المحتوى
+     //       Expanded(child: _buildTabContent()),
+          ],
         ),
       ),
     );

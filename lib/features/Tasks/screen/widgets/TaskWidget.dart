@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/constants/app_colors.dart';
-import '../../../core/widgets/chatDialog.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/widgets/chatDialog.dart';
 
-class ComplaintCard extends StatelessWidget {
-  final int index;
+
+class TaskCard extends StatelessWidget {
+  final String index;
   final String complainant;
   final String content;
   final String date;
   final String type;
   final String status;
 
-  const ComplaintCard({
+  const TaskCard({
     super.key,
     required this.index,
     required this.complainant,
@@ -21,18 +22,18 @@ class ComplaintCard extends StatelessWidget {
     required this.status,
   });
 
-    Color _statusColor() {
-      switch (status) {
-        case "جديد":
-          return Colors.blue;
-        case "قديم":
-          return Colors.green;
-        case "مرفوض":
-          return Colors.red;
-        default:
-          return Colors.grey;
-      }
+  Color _statusColor() {
+    switch (status) {
+      case "جديد":
+        return Colors.blue;
+      case "قديم":
+        return Colors.green;
+      case "مرفوض":
+        return Colors.red;
+      default:
+        return Colors.grey;
     }
+  }
 
   @override
   Widget build(BuildContext context) {

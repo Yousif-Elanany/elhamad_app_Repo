@@ -1,15 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/network/cache_helper.dart';
 import '../../../../localization_service.dart';
-import '../../../Organizations/widgets/ComplainDetail.dart';
-import '../../../compaines/views/widgets/addComplain.dart';
 import '../../../home/models/complainModel.dart';
 import '../../../drawer/appdrawer.dart';
-import '../../../policy/views/widgets/policyCard.dart';
+import '../../Services/Executives_Remote_Data_Source.dart';
+import '../../repos/Executives_Repo.dart';
+import '../../viewModel/executives_cubit.dart';
+import '../../viewModel/executives_state.dart';
 import '../widgets/AdminstraationDialog.dart';
 import '../widgets/adminCard.dart';
-// تأكد من استيراد الـ extension الخاص بك
-// import 'path_to_localization/localization_service.dart';
+
+
+class ExecutivesAdministratorsScreenWrapper extends StatelessWidget {
+  const ExecutivesAdministratorsScreenWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    print("🔥 CompanyHomeWrapper built");
+    return BlocProvider(
+      create: (_) =>
+          ExecutivesCubit(ExecutivesRepository(ExecutivesRemoteDataSource())),
+      child: const ExecutivesAdministrators(),
+    );
+  }
+}
 
 class ExecutivesAdministrators extends StatefulWidget {
   const ExecutivesAdministrators({super.key});
@@ -37,6 +53,13 @@ class _ExecutivesAdministratorsState extends State<ExecutivesAdministrators> {
       status: "جديد",
     ),
   ];
+
+  initState() {
+    super.initState();
+    print("🔥 ExecutivesAdministrators initState called");
+    context.read<ExecutivesCubit>().getExecutives(
+        CacheHelper.getData("companyId"));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -109,34 +132,59 @@ class _ExecutivesAdministratorsState extends State<ExecutivesAdministrators> {
               ],
             ),
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.all(12),
-                itemCount: complaints.length,
-                itemBuilder: (context, index) {
-                  final item = complaints[index];
+              child: BlocBuilder<ExecutivesCubit, ExecutivesState>(
+                builder: (context, state) {
 
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: adminCard(
-                      model: ComplaintModel(
-                        id: item.id,
-                        complainant: item.complainant,
-                        content: item.content,
-                        date: item.date,
-                        type: item.type,
-                        status: item.status,
-                      ),
-                      index: item.id,
-                      complainant: item.complainant,
-                      content: item.content,
-                      date: item.date,
-                      type: item.type,
-                      status: item.status,
-                    ),
-                  );
+                  // ⏳ Loading
+                  if (state is ExecutivesLoading) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+
+                  // ✅ Success
+                  else if (state is ExecutivesSuccess) {
+                    final complaints = state.data.items; // حسب الموديل عندك
+
+                    if (complaints.isEmpty) {
+                      return const Center(
+                        child: Text("لا يوجد بيانات"),
+                      );
+                    }
+
+                    return ListView.builder(
+                      padding: const EdgeInsets.all(12),
+                      itemCount: complaints.length,
+                      itemBuilder: (context, index) {
+                        final item = complaints[index];
+
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: adminCard(
+                            index: item.profileId,
+                            email: item.phone,
+                            name: item.name,
+                            NationalID : item.nationalId,
+                            jobTitle: item.jobTitle,
+                            status: item.isActive.toString(), phone: item.phone,
+                          ),
+                        );
+                      },
+                    );
+                  }
+
+                  // ❌ Error
+                  else if (state is ExecutivesError) {
+                    return Center(
+                      child: Text(state.message),
+                    );
+                  }
+
+                  // 🟡 Initial
+                  return const SizedBox();
                 },
               ),
-            ),
+            )
 
           ],
         ),
