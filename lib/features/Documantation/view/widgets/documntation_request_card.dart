@@ -15,7 +15,6 @@ class documatationRequestCard extends StatelessWidget {
   final String date;
   final String type;
   final String status;
-  final ComplaintModel model;
 
   const documatationRequestCard({
     super.key,
@@ -25,7 +24,6 @@ class documatationRequestCard extends StatelessWidget {
     required this.date,
     required this.type,
     required this.status,
-    required this.model,
   });
 
   Color _statusColor() {

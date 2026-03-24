@@ -155,16 +155,16 @@ class CommitteesCard extends StatelessWidget {
                     borderColor: Colors.deepPurple,
                   ),
                 ),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: ActionIconButton(
-                    onTap: () => ComplaintDetailsDialog.show(context),
-                    icon: Icons.newspaper,
-                    iconColor: Colors.deepOrangeAccent,
-                    backgroundColor: Colors.white,
-                    borderColor: Colors.deepOrangeAccent,
-                  ),
-                ),
+                // Align(
+                //   alignment: Alignment.centerLeft,
+                //   child: ActionIconButton(
+                //     onTap: () => ComplaintDetailsDialog.show(context),
+                //     icon: Icons.newspaper,
+                //     iconColor: Colors.deepOrangeAccent,
+                //     backgroundColor: Colors.white,
+                //     borderColor: Colors.deepOrangeAccent,
+                //   ),
+                // ),
               ],
             ),
           ],

@@ -60,7 +60,7 @@ class AppRoutes {
       case rules:
         return MaterialPageRoute(builder: (_) => const RulesAndRegulationsScreenWrapper());
       case Documantation:
-        return MaterialPageRoute(builder: (_) => const DocumantationScreen());
+        return MaterialPageRoute(builder: (_) => const DocumentationScreenWrapper());
       case Massage:
         return MaterialPageRoute(builder: (_) => const MassageScreenWrapper());
       case Tasks:
