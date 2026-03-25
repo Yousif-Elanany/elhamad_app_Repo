@@ -1,10 +1,17 @@
+import 'package:alhamd/features/Committees/Model/CreateCommitRequest.dart';
+import 'package:alhamd/features/Committees/viewModel/committees_cubit.dart';
+import 'package:alhamd/features/Committees/views/CommetDetail.dart';
+import 'package:alhamd/features/Committees/views/Dialogs/editDialog.dart';
+import 'package:alhamd/features/Committees/views/screens/MemberScreen.dart';
 import 'package:alhamd/localization_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/ActionIconButton.dart';
 import '../../../../core/widgets/chatDialog.dart';
 import '../../../../core/widgets/deleteDialog.dart';
+import '../../core/network/cache_helper.dart';
 import '../home/models/complainModel.dart';
 import '../policy/views/widgets/makePolicyRequestDialog.dart';
 
@@ -93,12 +100,12 @@ class CommitteesCard extends StatelessWidget {
             const SizedBox(height: 10),
 
             _buildRow("نوع اللجنة".tr(), type),
-            _buildRow("عدد الاعضاء".tr(),  membersCount.toString()),
-            _buildRow("عدد الأعضاء النشطين",  activeMemberCount.toString()),
-            _buildRow("عدد الأماكن المتاحة",  availableSeats.toString()),
-            _buildRow("تاريخ البداية",  startDate),
-            _buildRow("تاريخ النهاية",  endDate),
-            _buildRow("عدد الاجتماعات في السنه",  meetingsPerYear.toString()),
+            _buildRow("عدد الاعضاء".tr(), membersCount.toString()),
+            _buildRow("عدد الأعضاء النشطين", activeMemberCount.toString()),
+            _buildRow("عدد الأماكن المتاحة", availableSeats.toString()),
+            _buildRow("تاريخ البداية", startDate),
+            _buildRow("تاريخ النهاية", endDate),
+            _buildRow("عدد الاجتماعات في السنه", meetingsPerYear.toString()),
 
             const SizedBox(height: 12),
 
@@ -109,7 +116,16 @@ class CommitteesCard extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: ActionIconButton(
-                    onTap: () => ComplaintDetailsDialog.show(context),
+                    onTap: () => showCommitteeDetailsDialog(
+                      CreateCommitRequest(
+                        type: type,
+                        startDate: startDate,
+                        endDate: endDate,
+                        membersCount: int.parse(membersCount),
+                        yearlyMeetingsCount: int.parse(meetingsPerYear),
+                      ),
+                      context,
+                    ),
                     icon: Icons.remove_red_eye_rounded,
                     iconColor: AppColors.primaryOlive,
                     backgroundColor: AppColors.primaryOlive.withOpacity(.1),
@@ -119,8 +135,28 @@ class CommitteesCard extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: ActionIconButton(
-                    onTap: () {},
-                    //    makePolicyRequestDialog.show(context, model: model),
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (dialogContext) => BlocProvider.value(
+                          value: context
+                              .read<
+                                CommitteesCubit
+                              >(), // ← مهم تاخده من context الأصلي
+                          child: EditCommitteeDialog(
+                            committee: CreateCommitRequest(
+                              type: type,
+                              startDate: startDate,
+                              endDate: endDate,
+                              membersCount: int.parse(membersCount),
+                              yearlyMeetingsCount: int.parse(meetingsPerYear),
+                            ),
+                            committeeId: index,
+                          ),
+                        ),
+                      );
+                    },
                     icon: Icons.edit,
                     iconColor: Colors.blue,
                     backgroundColor: Colors.blue.withOpacity(.1),
@@ -130,15 +166,60 @@ class CommitteesCard extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: ActionIconButton(
-                    onTap: () => showDialog(
-                      context: context,
-                      builder: (_) => ConfirmDeleteDialog(
-                        onConfirm: () {
-                          Navigator.pop(context);
-                          // منطق الحذف هنا
-                        },
-                      ),
-                    ),
+                    onTap: () {
+                      final cubit = context.read<CommitteesCubit>();
+
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (dialogContext) => BlocProvider.value(
+                          value: cubit,
+                          child: BlocConsumer<CommitteesCubit, CommitteesState>(
+                            listener: (context, state) {
+                              if (state is DeleteCommitteesSuccess) {
+                                final scaffoldMessenger = ScaffoldMessenger.of(
+                                  context,
+                                );
+                                final navigator = Navigator.of(context);
+                                WidgetsBinding.instance.addPostFrameCallback((
+                                  _,
+                                ) {
+                                  navigator.pop();
+                                  scaffoldMessenger.showSnackBar(
+                                    const SnackBar(
+                                      content: Text("تم الحذف بنجاح"),
+                                    ),
+                                  );
+                                  cubit.getCommittees(
+                                    CacheHelper.getData("companyId"),
+                                  );
+                                });
+                              }
+                              if (state is DeleteCommitteesError) {
+                                final error = state.error;
+                                final scaffoldMessenger = ScaffoldMessenger.of(
+                                  context,
+                                );
+                                WidgetsBinding.instance.addPostFrameCallback((
+                                  _,
+                                ) {
+                                  scaffoldMessenger.showSnackBar(
+                                    SnackBar(content: Text(error)),
+                                  );
+                                });
+                              }
+                            },
+                            builder: (context, state) => ConfirmDeleteDialog(
+                              isLoading: state is DeleteCommitteesLoading,
+                              onConfirm: () => cubit.deleteCommitteesById(
+                                CacheHelper.getData("companyId"),
+                                index, // ← id اللجنة
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                     icon: Icons.delete,
                     iconColor: Colors.red,
                     backgroundColor: Colors.white,
@@ -148,7 +229,22 @@ class CommitteesCard extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: ActionIconButton(
-                    onTap: (){},
+                    onTap: () {
+                      final cubit = context.read<CommitteesCubit>();
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BlocProvider.value(
+                            value: cubit,
+                            child: MembersPage(
+                              cubit: cubit,
+                              committeeId: index,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                     icon: Icons.group,
                     iconColor: Colors.deepPurple,
                     backgroundColor: Colors.white,

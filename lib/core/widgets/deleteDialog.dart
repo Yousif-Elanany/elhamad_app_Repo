@@ -1,13 +1,15 @@
+import 'package:alhamd/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
-
 class ConfirmDeleteDialog extends StatelessWidget {
   final VoidCallback onConfirm;
   final VoidCallback? onCancel;
+  final bool isLoading; // ← جديد
 
   const ConfirmDeleteDialog({
     super.key,
     required this.onConfirm,
     this.onCancel,
+    this.isLoading = false, // ← جديد
   });
 
   @override
@@ -23,25 +25,21 @@ class ConfirmDeleteDialog extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // ── زر الإغلاق ──
               Align(
                 alignment: Alignment.centerRight,
                 child: IconButton(
-                  onPressed: onCancel ?? () => Navigator.pop(context),
+                  onPressed: isLoading ? null : (onCancel ?? () => Navigator.pop(context)),
                   icon: const Icon(Icons.close, color: Colors.grey),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                 ),
               ),
-
               const SizedBox(height: 8),
-
-              // ── أيقونة التحذير ──
               Container(
                 width: 90,
                 height: 90,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFFF8C00),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryOlive,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -50,10 +48,7 @@ class ConfirmDeleteDialog extends StatelessWidget {
                   size: 52,
                 ),
               ),
-
               const SizedBox(height: 20),
-
-              // ── العنوان ──
               const Text(
                 'هل أنت متأكد؟',
                 style: TextStyle(
@@ -62,26 +57,15 @@ class ConfirmDeleteDialog extends StatelessWidget {
                   color: Color(0xFF1A1A1A),
                 ),
               ),
-
               const SizedBox(height: 12),
-
-              // ── النص ──
               const Text(
-                'هل أنت متأكد أنك تريد الحذف؟ إذا واصلت، فسيتم إزالة المهمة نهائيًا من القائمة.',
+                'هل أنت متأكد أنك تريد الحذف؟ إذا واصلت، فسيتم إزالة العنصر نهائيًا من القائمة.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFF666666),
-                  height: 1.6,
-                ),
+                style: TextStyle(fontSize: 13, color: Color(0xFF666666), height: 1.6),
               ),
-
               const SizedBox(height: 24),
-
-              // ── الأزرار ──
               Row(
                 children: [
-                  // إلغاء
                   Expanded(
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
@@ -90,23 +74,31 @@ class ConfirmDeleteDialog extends StatelessWidget {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         foregroundColor: Colors.grey[700],
                       ),
-                      onPressed: onCancel ?? () => Navigator.pop(context),
+                      onPressed: isLoading ? null : (onCancel ?? () => Navigator.pop(context)),
                       child: const Text('إلغاء', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                     ),
                   ),
                   const SizedBox(width: 12),
-                  // حفظ / تأكيد
                   Expanded(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6B7B3A),
+                        backgroundColor: AppColors.primaryOlive,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 13),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         elevation: 0,
                       ),
-                      onPressed: onConfirm,
-                      child: const Text('حفظ', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                      onPressed: isLoading ? null : onConfirm,
+                      child: isLoading
+                          ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                          : const Text('تأكيد', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                     ),
                   ),
                 ],
@@ -118,7 +110,6 @@ class ConfirmDeleteDialog extends StatelessWidget {
     );
   }
 }
-
 // ── طريقة الاستخدام ──────────────────────────────
 // showDialog(
 //   context: context,

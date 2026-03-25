@@ -1,6 +1,8 @@
 import 'package:bloc/bloc.dart';
+import 'package:dio/dio.dart';
 import 'package:meta/meta.dart';
 
+import '../../../core/network/models/ErrorModel.dart';
 import '../Model/CreateCommitMemberRequest.dart';
 import '../Model/CreateCommitRequest.dart';
 import '../Model/UsersSigntureRequestModel.dart';
@@ -43,7 +45,7 @@ class CommitteesCubit extends Cubit<CommitteesState> {
     emit(EditCommitteesLoading());
     try {
       final response = await repository.editCommitteesById(companyId, request, id);
-      emit(EditCommitteesSuccess(response));
+      emit(EditCommitteesSuccess());
     } catch (e) {
       emit(EditCommitteesError(e.toString()));
     }
@@ -54,7 +56,7 @@ class CommitteesCubit extends Cubit<CommitteesState> {
     emit(DeleteCommitteesLoading());
     try {
       final response = await repository.deleteCommitteesById(companyId, id);
-      emit(DeleteCommitteesSuccess(response));
+      emit(DeleteCommitteesSuccess());
     } catch (e) {
       emit(DeleteCommitteesError(e.toString()));
     }
@@ -71,12 +73,44 @@ class CommitteesCubit extends Cubit<CommitteesState> {
     }
   }
 
-  // ===== Create Committee Member =====
-  Future<void> createCommitteeMember(String companyId, int committeeId, CreateCommitMemberRequest request) async {
+  Future<void> createCommitteeMember(
+      String companyId,
+      int committeeId,
+      CreateCommitMemberRequest request,
+      ) async {
     emit(CreateCommitteeMemberLoading());
     try {
-      final response = await repository.createCommitteesMembersByCommitteeId(companyId, committeeId, request);
-      emit(CreateCommitteeMemberSuccess(response));
+      final response = await repository.createCommitteesMembersByCommitteeId(
+        companyId,
+        committeeId,
+        request,
+      );
+      emit(CreateCommitteeMemberSuccess());
+    } on DioException catch (e) {
+      String errorMessage = 'حدث خطأ من السيرفر';
+
+      if (e.response != null && e.response!.data != null) {
+        try {
+          print("Raw error data: ${e.response!.data}");
+          // لو الـ data Map بالفعل
+          final data = e.response!.data is Map
+              ? e.response!.data
+              : Map<String, dynamic>.from(e.response!.data);
+
+          final errorModel = ErrorResponseModel.fromJson(data);
+          errorMessage = errorModel.detail; // الرسالة اللي هتظهر
+        } catch (_) {
+          // لو حصل parsing error
+          errorMessage = e.response!.data.toString();
+          print("Raw error data: ${e.response!.data}");
+
+        }
+      } else {
+        errorMessage = e.message ?? errorMessage;
+      }
+
+      print("Error message parsed: $errorMessage");
+      emit(CreateCommitteeMemberError(errorMessage));
     } catch (e) {
       emit(CreateCommitteeMemberError(e.toString()));
     }

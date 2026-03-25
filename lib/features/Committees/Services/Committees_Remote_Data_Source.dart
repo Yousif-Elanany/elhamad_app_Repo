@@ -9,8 +9,7 @@ import '../Model/editMemberModel.dart';
 import '../Model/getCommitMembersResponse.dart';
 
 class CommitteesRemoteDataSource {
-
-     ///// جلب معلومات الشركة
+  ///// جلب معلومات الشركة
   Future<CommitteesResponseModel> getCommittees(String companyId) async {
     final response = await DioHelper.get(
       query: {"Accept-Language": "ar", "pageNumber": "1", "pageSize": "10"},
@@ -20,46 +19,56 @@ class CommitteesRemoteDataSource {
     print("response===> ${response.data}");
     return CommitteesResponseModel.fromJson(response.data);
   }
-  Future<CommitteesResponseModel> createCommittees(String companyId,CreateCommitRequest requestModel) async {
+
+  Future<Map<String,dynamic>> createCommittees(
+    String companyId,
+    CreateCommitRequest requestModel,
+  ) async {
     final response = await DioHelper.post(
       data: requestModel.toJson(),
-      query: {"Accept-Language": "ar", "pageNumber": "1", "pageSize": "10"},
+      query: {"Accept-Language": "ar"},
       "companies/$companyId/committees",
       requiresToken: true,
     );
     print("response===> ${response.data}");
-    return CommitteesResponseModel.fromJson(response.data);
+    return response.data;
   }
-  Future<CommitteesResponseModel> editCommitteesById(String companyId,CreateCommitRequest requestModel,int id) async {
+
+  Future<void> editCommitteesById(
+      String companyId,
+      CreateCommitRequest requestModel,
+      int id,
+      ) async {
     final response = await DioHelper.put(
       data: requestModel.toJson(),
-      query: {"Accept-Language": "ar","pageNumber": "1", "pageSize": "10"},
+      query: {"Accept-Language": "ar", "pageNumber": "1", "pageSize": "10"},
       "companies/$companyId/committees/$id",
       requiresToken: true,
     );
     print("response===> ${response.data}");
-    return CommitteesResponseModel.fromJson(response.data);
+    // مش محتاج نرجع حاجة لأن الـ API مش بيرجع data
   }
-  Future<CommitteesResponseModel> deleteCommitteesById(String companyId,int id) async {
+
+  Future<void> deleteCommitteesById(
+    String companyId,
+    int id,
+  ) async {
     final response = await DioHelper.delete(
-      query: {"Accept-Language": "ar","pageNumber": "1", "pageSize": "10"},
+      query: {"Accept-Language": "ar", "pageNumber": "1", "pageSize": "10"},
       "companies/$companyId/committees/$id",
       requiresToken: true,
     );
     print("response===> ${response.data}");
-    return CommitteesResponseModel.fromJson(response.data);
+    return response.data;
   }
+
   Future<List<GetCommitMembersResponse>> getCommitteeMembersByCommitteeId(
-      String companyId,
-      int committeeId,
-      ) async {
+    String companyId,
+    int committeeId,
+  ) async {
     final response = await DioHelper.get(
       "companies/$companyId/committees/$committeeId/members",
-      query: {
-        "Accept-Language": "ar",
-        "pageNumber": "1",
-        "pageSize": "10",
-      },
+      query: {"Accept-Language": "ar", "pageNumber": "1", "pageSize": "10"},
       requiresToken: true,
     );
 
@@ -70,28 +79,41 @@ class CommitteesRemoteDataSource {
     );
   }
 
-  Future<CommitteesResponseModel> createCommitteesMembersByCommitteeId(String companyId,int committeeId ,CreateCommitMemberRequest request) async {
+  Future<Map<String,dynamic>>  createCommitteesMembersByCommitteeId(
+    String companyId,
+    int committeeId,
+    CreateCommitMemberRequest request,
+  ) async {
+    print("🔥 Request Data: ${request.toJson()}");
     final response = await DioHelper.post(
-      query: {"Accept-Language": "ar", "pageNumber": "1", "pageSize": "10"},
+      query: {"Accept-Language": "ar"},
       "companies/$companyId/committees/$committeeId/members",
+      data: request.toJson(),
+      requiresToken: true,
+    );
+    print("response===> ${response.data}");
+    return response.data;
+  }
+
+  Future<CommitteesResponseModel> editMembersByMembersId(
+    String companyId,
+    int id,
+    EditMemberModel request,
+  ) async {
+    final response = await DioHelper.put(
+      query: {"Accept-Language": "ar", "pageNumber": "1", "pageSize": "10"},
+      "companies/$companyId/committees/members/$id",
       data: request.toJson(),
       requiresToken: true,
     );
     print("response===> ${response.data}");
     return CommitteesResponseModel.fromJson(response.data);
   }
-  Future<CommitteesResponseModel> editMembersByMembersId(String companyId,int id,EditMemberModel request) async {
-    final response = await DioHelper.put(
-      query: {"Accept-Language": "ar", "pageNumber": "1", "pageSize": "10"},
-      "companies/$companyId/committees/members/$id",
-      data:request.toJson(),
-      requiresToken: true,
-    );
-    print("response===> ${response.data}");
-    return CommitteesResponseModel.fromJson(response.data);
-  }
 
-  Future<CommitteesResponseModel> deleteMembersByMembersId(String companyId,int id) async {
+  Future<CommitteesResponseModel> deleteMembersByMembersId(
+    String companyId,
+    int id,
+  ) async {
     final response = await DioHelper.delete(
       query: {"Accept-Language": "ar", "pageNumber": "1", "pageSize": "10"},
       "companies/$companyId/committees/members/$id",
@@ -101,7 +123,11 @@ class CommitteesRemoteDataSource {
     return CommitteesResponseModel.fromJson(response.data);
   }
 
-  Future<CommitteesResponseModel> sendSignatureRequest(String companyId,int committeeId ,UsersSigntureRequestModel model) async {
+  Future<CommitteesResponseModel> sendSignatureRequest(
+    String companyId,
+    int committeeId,
+    UsersSigntureRequestModel model,
+  ) async {
     final response = await DioHelper.post(
       query: {"Accept-Language": "ar", "pageNumber": "1", "pageSize": "10"},
       "companies/$companyId/signature-requests",
@@ -111,5 +137,4 @@ class CommitteesRemoteDataSource {
     print("response===> ${response.data}");
     return CommitteesResponseModel.fromJson(response.data);
   }
-
 }

@@ -22,7 +22,7 @@ final class GetCommitteesError extends CommitteesState {
 final class CreateCommitteesLoading extends CommitteesState {}
 
 final class CreateCommitteesSuccess extends CommitteesState {
-  final CommitteesResponseModel data;
+  final Map<String,dynamic> data;
   CreateCommitteesSuccess(this.data);
 }
 
@@ -35,8 +35,7 @@ final class CreateCommitteesError extends CommitteesState {
 final class EditCommitteesLoading extends CommitteesState {}
 
 final class EditCommitteesSuccess extends CommitteesState {
-  final CommitteesResponseModel data;
-  EditCommitteesSuccess(this.data);
+  EditCommitteesSuccess();
 }
 
 final class EditCommitteesError extends CommitteesState {
@@ -48,8 +47,7 @@ final class EditCommitteesError extends CommitteesState {
 final class DeleteCommitteesLoading extends CommitteesState {}
 
 final class DeleteCommitteesSuccess extends CommitteesState {
-  final CommitteesResponseModel data;
-  DeleteCommitteesSuccess(this.data);
+  DeleteCommitteesSuccess();
 }
 
 final class DeleteCommitteesError extends CommitteesState {
@@ -74,8 +72,7 @@ final class GetCommitteeMembersError extends CommitteesState {
 final class CreateCommitteeMemberLoading extends CommitteesState {}
 
 final class CreateCommitteeMemberSuccess extends CommitteesState {
-  final CommitteesResponseModel data;
-  CreateCommitteeMemberSuccess(this.data);
+  CreateCommitteeMemberSuccess();
 }
 
 final class CreateCommitteeMemberError extends CommitteesState {

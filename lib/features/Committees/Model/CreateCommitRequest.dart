@@ -3,6 +3,7 @@
 //     final createCommitRequest = createCommitRequestFromJson(jsonString);
 
 import 'dart:convert';
+import 'dart:math';
 
 CreateCommitRequest createCommitRequestFromJson(String str) => CreateCommitRequest.fromJson(json.decode(str));
 
@@ -10,8 +11,8 @@ String createCommitRequestToJson(CreateCommitRequest data) => json.encode(data.t
 
 class CreateCommitRequest {
   String type;
-  DateTime startDate;
-  DateTime endDate;
+  String startDate;
+  String endDate;
   int membersCount;
   int yearlyMeetingsCount;
 
@@ -25,16 +26,16 @@ class CreateCommitRequest {
 
   factory CreateCommitRequest.fromJson(Map<String, dynamic> json) => CreateCommitRequest(
     type: json["type"],
-    startDate: DateTime.parse(json["startDate"]),
-    endDate: DateTime.parse(json["endDate"]),
+    startDate: json["startDate"],
+    endDate: json["endDate"],
     membersCount: json["membersCount"],
     yearlyMeetingsCount: json["yearlyMeetingsCount"],
   );
 
   Map<String, dynamic> toJson() => {
     "type": type,
-    "startDate": "${startDate.year.toString().padLeft(4, '0')}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}",
-    "endDate": "${endDate.year.toString().padLeft(4, '0')}-${endDate.month.toString().padLeft(2, '0')}-${endDate.day.toString().padLeft(2, '0')}",
+    "startDate": startDate,
+    "endDate": endDate,
     "membersCount": membersCount,
     "yearlyMeetingsCount": yearlyMeetingsCount,
   };

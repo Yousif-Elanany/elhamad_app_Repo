@@ -37,7 +37,7 @@ class ApiException implements Exception {
 
   @override
   String toString() =>
-      'ApiException(type: $type, statusCode: $statusCode, message: $message)';
+      '$message)';
 }
 
 /// Utility Function لتحويل DioError أو أي Error لـ ApiException
@@ -46,7 +46,17 @@ ApiException handleDioError(dynamic error) {
     final data = error.response?.data;
     debugPrint("🔥 Dio Response Data: $data");
 
-    // لو الـ API رجع Map وفيه message نستخدمه
+    // لو الـ API رجع Map وفيه detail نستخدمه
+    if (data is Map && data['detail'] != null) {
+      return ApiException(
+        data['detail'].toString(),
+        type: _typeFromStatusCode(error.response?.statusCode),
+        statusCode: error.response?.statusCode,
+        data: data,
+      );
+    }
+
+    // fallback لو فيه message
     if (data is Map && data['message'] != null) {
       return ApiException(
         data['message'].toString(),
@@ -140,7 +150,6 @@ ApiException handleDioError(dynamic error) {
     type: ApiExceptionType.unknown,
   );
 }
-
 // ── Helpers ───────────────────────────────────────────────────
 ApiExceptionType _typeFromStatusCode(int? code) {
   switch (code) {

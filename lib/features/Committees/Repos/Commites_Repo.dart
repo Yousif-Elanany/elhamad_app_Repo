@@ -21,7 +21,7 @@ class CommitteesRepository implements CommitteesRemoteDataSource {
   }
 
   @override
-  Future<CommitteesResponseModel> createCommittees(
+  Future<Map<String,dynamic>> createCommittees(
       String companyId,
       CreateCommitRequest requestModel,
       ) {
@@ -29,7 +29,7 @@ class CommitteesRepository implements CommitteesRemoteDataSource {
   }
 
   @override
-  Future<CommitteesResponseModel> editCommitteesById(
+  Future<void> editCommitteesById(
       String companyId,
       CreateCommitRequest requestModel,
       int id,
@@ -38,7 +38,7 @@ class CommitteesRepository implements CommitteesRemoteDataSource {
   }
 
   @override
-  Future<CommitteesResponseModel> deleteCommitteesById(
+  Future<void> deleteCommitteesById(
       String companyId,
       int id,
       ) {
@@ -54,7 +54,7 @@ class CommitteesRepository implements CommitteesRemoteDataSource {
   }
 
   @override
-  Future<CommitteesResponseModel> createCommitteesMembersByCommitteeId(
+  Future<Map<String,dynamic>>  createCommitteesMembersByCommitteeId(
       String companyId,
       int committeeId,
       CreateCommitMemberRequest request,

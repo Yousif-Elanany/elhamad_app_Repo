@@ -5,6 +5,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/ActionIconButton.dart';
 import '../../../../core/widgets/chatDialog.dart';
 import '../../../home/models/complainModel.dart';
+import '../../../managments/views/widgets/AddMemberDialog.dart';
 import '../../../managments/views/widgets/managmentWidget.dart';
 import '../widgets/AddEmployee.dart';
 import '../widgets/employeeCard.dart';
@@ -157,60 +158,6 @@ class FirstDialog extends StatelessWidget {
   }
 }
 
-class AddMemberDialog extends StatefulWidget {
-  const AddMemberDialog({super.key});
-
-  @override
-  State<AddMemberDialog> createState() => _AddMemberDialogState();
-}
-
-class _AddMemberDialogState extends State<AddMemberDialog> {
-  final _formKey = GlobalKey<FormState>();
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  "إضافة عضو جديد",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-
-                const SizedBox(height: 15),
-
-                _buildField("الاسم"),
-                _buildField("رقم الهوية"),
-                _buildField("نوع العضوية"),
-                _buildField("المسمى الوظيفي"),
-                _buildField("رقم الجوال"),
-                _buildField("البريد الإلكتروني"),
-
-                const SizedBox(height: 20),
-
-                ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      Navigator.pop(context); // يقفل Dialog العضو
-                    }
-                  },
-                  child: const Text("حفظ"),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildField(String label) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -228,4 +175,4 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
       ),
     );
   }
-}
+
