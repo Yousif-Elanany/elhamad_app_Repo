@@ -10,6 +10,7 @@ import '../../../employees/view/screens/EmployeesTabContent.dart';
 import '../../../managments/views/widgets/AddMemberDialog.dart';
 import '../../viewModel/committees_cubit.dart';
 import '../Dialogs/AddMemberCommetDialog.dart';
+import '../Dialogs/EditMemberDialog.dart';
 
 class MembersPage extends StatefulWidget {
   final int committeeId;
@@ -33,7 +34,7 @@ class _MembersPageState extends State<MembersPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _membershipTypeController =
-  TextEditingController();
+      TextEditingController();
   final TextEditingController _jobTitleController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -84,7 +85,9 @@ class _MembersPageState extends State<MembersPage> {
                   barrierDismissible: false,
                   builder: (dialogContext) => BlocProvider.value(
                     value: cubit,
-                    child: AddMemberCommitteesDialog(committeeId: widget.committeeId),
+                    child: AddMemberCommitteesDialog(
+                      committeeId: widget.committeeId,
+                    ),
                   ),
                 );
                 setState(() {
@@ -106,8 +109,7 @@ class _MembersPageState extends State<MembersPage> {
 
             Expanded(
               child: BlocBuilder<CommitteesCubit, CommitteesState>(
-
-              builder: (context, state) {
+                builder: (context, state) {
                   if (state is GetCommitteeMembersLoading) {
                     return const Center(child: CircularProgressIndicator());
                   }
@@ -139,12 +141,14 @@ class _MembersPageState extends State<MembersPage> {
                         final member = members[index];
 
                         return _buildMemberCard({
+                          "profileId": member.profileId,
                           "name": member.name ?? "",
-                          "id": member.nationalId ?? "",
+                          "nationalId": member.nationalId ?? "",
                           "membershipType": member.jobTitle ?? "",
                           "jobTitle": member.jobTitle ?? "",
                           "phone": member.phoneNumber ?? "",
                           "email": member.email ?? "",
+                          "startDate": member.startDate.toString() ?? "",
                         });
                       },
                     );
@@ -160,7 +164,7 @@ class _MembersPageState extends State<MembersPage> {
     );
   }
 
-  Widget _buildMemberCard(Map<String, String> member) {
+  Widget _buildMemberCard(Map<String, dynamic> member) {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 15),
@@ -177,7 +181,7 @@ class _MembersPageState extends State<MembersPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildRow("الاسم", member["name"] ?? ""),
-          _buildRow("رقم الهوية", member["id"] ?? ""),
+          _buildRow("رقم الهوية", member["nationalId"] ?? ""),
           _buildRow("نوع العضوية", member["membershipType"] ?? ""),
           _buildRow("المسمى الوظيفي", member["jobTitle"] ?? ""),
           _buildRow("رقم الجوال", member["phone"] ?? ""),
@@ -190,17 +194,68 @@ class _MembersPageState extends State<MembersPage> {
           const SizedBox(height: 10),
 
           _buildActions(
-                () => ComplaintDetailsDialog.show(context),
-                () => showDialog(
-              context: context,
-              builder: (_) => ConfirmDeleteDialog(
+            () {
+              final cubit = context.read<CommitteesCubit>();
+              print(DateTime.tryParse(member["startDate"].toString()));
+              print(member["profileId"]);
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (dialogContext) => BlocProvider.value(
+                  value: cubit,
+                  child: EditMemberDialog(
+                    memberId: member["profileId"],
+                    currentJobTitle: member["jobTitle"].toString(),
+                    currentStartDate:
+                        DateTime.tryParse(member["startDate"] ?? '') ??
+                        DateTime.now(),
+                    committee: widget.committeeId,
+                  ),
+                ),
+              );
+            },
+            () {  final cubit = context.read<CommitteesCubit>();
 
-                onConfirm: () {
-                  Navigator.pop(context);
-                  // منطق الحذف هنا
-                },
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (dialogContext) => BlocProvider.value(
+                value: cubit,
+                child: BlocConsumer<CommitteesCubit, CommitteesState>(
+                  listener: (context, state) {
+                    if (state is DeleteMemberSuccess) {
+                      final scaffoldMessenger = ScaffoldMessenger.of(context);
+                      final navigator = Navigator.of(context);
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        navigator.pop();
+                        scaffoldMessenger.showSnackBar(
+
+                           SnackBar(content: Text("تم حذف العضو بنجاح"),backgroundColor: AppColors.primaryOlive,),
+                        );
+                        cubit.getCommitteeMembers(
+                          CacheHelper.getData("companyId"),
+                          widget.committeeId,
+                        );
+                      });
+                    }
+                    if (state is DeleteMemberError) {
+                      final error = state.error;
+                      final scaffoldMessenger = ScaffoldMessenger.of(context);
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        scaffoldMessenger.showSnackBar(SnackBar(content: Text(error)));
+                      });
+                    }
+                  },
+                  builder: (context, state) => ConfirmDeleteDialog(
+                    isLoading: state is DeleteMemberLoading,
+                    onConfirm: () => cubit.deleteMember(
+                      CacheHelper.getData("companyId"),
+                      member["profileId"],
+                    ),
+                  ),
+                ),
               ),
-            ),
+            );}
           ),
         ],
       ),

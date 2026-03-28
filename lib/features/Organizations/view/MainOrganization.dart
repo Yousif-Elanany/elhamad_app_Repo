@@ -10,7 +10,6 @@ import '../ViewModel/organization_cubit.dart';
 import 'OrganizationRequests.dart';
 import 'Organizations.dart';
 
-
 class MainOrganizationScreenWrapper extends StatelessWidget {
   const MainOrganizationScreenWrapper({super.key});
 
@@ -19,12 +18,15 @@ class MainOrganizationScreenWrapper extends StatelessWidget {
     print("🔥 CompanyHomeWrapper built");
     return BlocProvider(
       create: (_) =>
-          OrganizationCubit(OrganizationRepository(OrganizationRemoteDataSource()))..getCompanyMeetings(CacheHelper.getData("companyId"))..getCompanyMeetingsRequests(CacheHelper.getData("companyId")),
+          OrganizationCubit(
+              OrganizationRepository(OrganizationRemoteDataSource()),
+            )
+            ..getCompanyMeetings(CacheHelper.getData("companyId"))
+            ..getCompanyMeetingsRequests(CacheHelper.getData("companyId")),
       child: const MainOrganizationScreen(),
     );
   }
 }
-
 
 class MainOrganizationScreen extends StatefulWidget {
   const MainOrganizationScreen({super.key});
@@ -84,13 +86,14 @@ class _MainOrganizationScreenState extends State<MainOrganizationScreen> {
                       ),
                       Expanded(
                         child: TabBarView(
-                          children: [Organizations(
-                            cubit:  context.read<OrganizationCubit>(),
-                          ), OrganizationRequest(
-
-                            cubit:  context.read<OrganizationCubit>(),
-
-                          )],
+                          children: [
+                            Organizations(
+                              cubit: context.read<OrganizationCubit>(),
+                            ),
+                            OrganizationRequest(
+                              cubit: context.read<OrganizationCubit>(),
+                            ),
+                          ],
                         ),
                       ),
                     ],

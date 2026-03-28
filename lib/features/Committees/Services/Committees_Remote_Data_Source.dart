@@ -3,9 +3,9 @@ import 'package:alhamd/features/managments/Models/MemberModel.dart';
 import '../../../core/network/DioService.dart';
 import '../Model/CreateCommitMemberRequest.dart';
 import '../Model/CreateCommitRequest.dart';
+import '../Model/EditMemberModel.dart';
 import '../Model/UsersSigntureRequestModel.dart';
 import '../Model/committeesResponseModel.dart';
-import '../Model/editMemberModel.dart';
 import '../Model/getCommitMembersResponse.dart';
 
 class CommitteesRemoteDataSource {
@@ -54,7 +54,7 @@ class CommitteesRemoteDataSource {
     int id,
   ) async {
     final response = await DioHelper.delete(
-      query: {"Accept-Language": "ar", "pageNumber": "1", "pageSize": "10"},
+      query: {"Accept-Language": "ar"},
       "companies/$companyId/committees/$id",
       requiresToken: true,
     );
@@ -95,10 +95,10 @@ class CommitteesRemoteDataSource {
     return response.data;
   }
 
-  Future<CommitteesResponseModel> editMembersByMembersId(
+  Future<void>  editMembersByMembersId(
     String companyId,
     int id,
-    EditMemberModel request,
+      EditMemberModel request,
   ) async {
     final response = await DioHelper.put(
       query: {"Accept-Language": "ar", "pageNumber": "1", "pageSize": "10"},
@@ -107,10 +107,9 @@ class CommitteesRemoteDataSource {
       requiresToken: true,
     );
     print("response===> ${response.data}");
-    return CommitteesResponseModel.fromJson(response.data);
   }
 
-  Future<CommitteesResponseModel> deleteMembersByMembersId(
+  Future<void>  deleteMembersByMembersId(
     String companyId,
     int id,
   ) async {
@@ -120,7 +119,6 @@ class CommitteesRemoteDataSource {
       requiresToken: true,
     );
     print("response===> ${response.data}");
-    return CommitteesResponseModel.fromJson(response.data);
   }
 
   Future<CommitteesResponseModel> sendSignatureRequest(

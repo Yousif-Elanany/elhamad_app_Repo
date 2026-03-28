@@ -125,7 +125,7 @@ class _AddMemberCommitteesDialogState extends State<AddMemberCommitteesDialog> {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             navigator.pop();
             scaffoldMessenger.showSnackBar(
-              const SnackBar(content: Text("تم إضافة العضو بنجاح")),
+               SnackBar(content: Text("تم إضافة العضو بنجاح"),backgroundColor:  AppColors.primaryOlive,),
             );
             cubit.getCommitteeMembers(
               CacheHelper.getData("companyId"),
@@ -392,8 +392,8 @@ class _AddMemberCommitteesDialogState extends State<AddMemberCommitteesDialog> {
                     if (value == null || value.isEmpty) {
                       return 'رقم الهوية مطلوب';
                     }
-                    if (value.length < 10) {
-                      return 'رقم غير صحيح';
+                    if (value.length != 10) {
+                      return ' رقم الهوية 10 ارقام';
                     }
                     return null;
                   },

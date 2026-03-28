@@ -1,13 +1,9 @@
 import 'package:alhamd/features/Committees/Model/CreateCommitMemberRequest.dart';
 import 'package:alhamd/features/Committees/Model/CreateCommitRequest.dart';
 import 'package:alhamd/features/Committees/Model/UsersSigntureRequestModel.dart';
-import 'package:alhamd/features/Committees/Model/editMemberModel.dart';
 import 'package:alhamd/features/Committees/Model/getCommitMembersResponse.dart';
-import 'package:alhamd/features/home/models/SubscriptionsModel.dart';
-import 'package:alhamd/features/managments/Models/DiewctorModel.dart';
-import 'package:alhamd/features/managments/Models/MemberModel.dart';
-import 'package:alhamd/features/managments/services/management_Remote_Data_Source.dart';
 
+import '../Model/EditMemberModel.dart';
 import '../Model/committeesResponseModel.dart';
 import '../Services/Committees_Remote_Data_Source.dart';
 class CommitteesRepository implements CommitteesRemoteDataSource {
@@ -63,7 +59,7 @@ class CommitteesRepository implements CommitteesRemoteDataSource {
   }
 
   @override
-  Future<CommitteesResponseModel> editMembersByMembersId(
+  Future<void> editMembersByMembersId(
       String companyId,
       int id,
       EditMemberModel request,
@@ -72,7 +68,7 @@ class CommitteesRepository implements CommitteesRemoteDataSource {
   }
 
   @override
-  Future<CommitteesResponseModel> deleteMembersByMembersId(
+  Future<void>  deleteMembersByMembersId(
       String companyId,
       int id,
       ) {

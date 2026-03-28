@@ -5,9 +5,9 @@ import 'package:meta/meta.dart';
 import '../../../core/network/models/ErrorModel.dart';
 import '../Model/CreateCommitMemberRequest.dart';
 import '../Model/CreateCommitRequest.dart';
+import '../Model/EditMemberModel.dart';
 import '../Model/UsersSigntureRequestModel.dart';
 import '../Model/committeesResponseModel.dart';
-import '../Model/editMemberModel.dart';
 import '../Model/getCommitMembersResponse.dart';
 import '../Repos/Commites_Repo.dart';
 
@@ -55,6 +55,7 @@ class CommitteesCubit extends Cubit<CommitteesState> {
   Future<void> deleteCommitteesById(String companyId, int id) async {
     emit(DeleteCommitteesLoading());
     try {
+      print( "Deleting committee with ID: $id");
       final response = await repository.deleteCommitteesById(companyId, id);
       emit(DeleteCommitteesSuccess());
     } catch (e) {
@@ -120,8 +121,9 @@ class CommitteesCubit extends Cubit<CommitteesState> {
   Future<void> editMember(String companyId, int id, EditMemberModel request) async {
     emit(EditMemberLoading());
     try {
+      print("Editing member with ID: $id, Request: ${request.toJson()}");
       final response = await repository.editMembersByMembersId(companyId, id, request);
-      emit(EditMemberSuccess(response));
+      emit(EditMemberSuccess());
     } catch (e) {
       emit(EditMemberError(e.toString()));
     }
@@ -132,7 +134,7 @@ class CommitteesCubit extends Cubit<CommitteesState> {
     emit(DeleteMemberLoading());
     try {
       final response = await repository.deleteMembersByMembersId(companyId, id);
-      emit(DeleteMemberSuccess(response));
+      emit(DeleteMemberSuccess());
     } catch (e) {
       emit(DeleteMemberError(e.toString()));
     }

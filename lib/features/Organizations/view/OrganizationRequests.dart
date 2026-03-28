@@ -3,6 +3,7 @@ import 'package:alhamd/features/Organizations/view/widgets/OrganizationWidget.da
 import 'package:alhamd/features/Organizations/view/widgets/StepCircle.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart%20';
@@ -11,6 +12,7 @@ import '../../../core/network/cache_helper.dart';
 import '../../../core/network/handleErrors/ValidationClass.dart';
 import '../../managments/views/widgets/managmentWidget.dart';
 import '../ViewModel/organization_cubit.dart';
+import '../model/MeetingRequestModel.dart';
 import '../model/organization_model.dart';
 import '../../../localization_service.dart';
 
@@ -38,7 +40,6 @@ class _OrganizationRequestState extends State<OrganizationRequest> {
   final TextEditingController cityController = TextEditingController();
   final TextEditingController locationController = TextEditingController();
   final TextEditingController dateController = TextEditingController();
-  final TextEditingController expiryDateController = TextEditingController();
   final TextEditingController timeController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController notesController = TextEditingController();
@@ -530,7 +531,10 @@ class _OrganizationRequestState extends State<OrganizationRequest> {
       },
     );
   }
-
+  final Map<String, String> orgTypeMap = {
+    "عادي": "Ordinary",
+    "غير عادي": "ExtraOrdinary",
+  };
   // --- Step 1: Input ---
   Widget _buildStep1(StateSetter setModalState) {
     return Form(
@@ -548,7 +552,7 @@ class _OrganizationRequestState extends State<OrganizationRequest> {
                   controller: nameController,
                   isRequired: true,
                   isDropdown: true,
-                  items: ["عادي", "غير عادي"],
+                  items: orgTypeMap.keys.toList(), // 👈 اللي هيظهر
                 ),
               ),
               const SizedBox(width: 15),
@@ -572,14 +576,7 @@ class _OrganizationRequestState extends State<OrganizationRequest> {
                   isRequired: true,
                 ),
               ),
-              const SizedBox(width: 15),
-              Expanded(
-                child: _buildDateField(
-                  label: "expiry_date".tr(),
-                  controller: expiryDateController,
-                  isRequired: true,
-                ),
-              ),
+
             ],
           ),
 
@@ -630,9 +627,7 @@ class _OrganizationRequestState extends State<OrganizationRequest> {
       ),
     );
   }
-
-  // --- Step 2: Review ---
-  Widget _buildStep2(StateSetter setModalState) {
+  Widget _buildStep2(StateSetter setModalState, OrganizationState state) {
     return Column(
       children: [
         _buildStepper(2),
@@ -648,7 +643,6 @@ class _OrganizationRequestState extends State<OrganizationRequest> {
               _buildReviewRow("org_type".tr(), nameController.text),
               _buildReviewRow("action".tr(), actionController.text),
               _buildReviewRow("org_date_Time".tr(), dateController.text),
-              _buildReviewRow("expiry_date".tr(), expiryDateController.text),
               _buildReviewRow(
                 "attachments".tr(),
                 selectedFile?.name ?? "",
@@ -683,8 +677,45 @@ class _OrganizationRequestState extends State<OrganizationRequest> {
                   backgroundColor: primaryOlive,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
-                onPressed: () => setModalState(() => currentStep = 3),
-                child: Text(
+
+                // ✅ هنا التعديل
+                onPressed: state is CreateMeetingLoading
+                    ? null
+                    : () {
+                  // ✅ تحويل التاريخ للفورمات الصح
+                  DateTime parsedDate = DateTime.parse(
+                    dateController.text.replaceFirst(" ", "T"),
+                  );
+
+                  String formattedDate = parsedDate.toUtc().toIso8601String();
+
+                  final model = MeetingRequestModel(
+                    meetingType: orgTypeMap[nameController.text] ?? "",
+                    procedureType: actionController.text,
+                    startTime: formattedDate, // ✅ هنا التعديل
+                    attachmentDocumentIds: [0],
+                    notes: notesController.text,
+                  );
+
+                  context.read<OrganizationCubit>().createMeetingRequest(
+                    CacheHelper.getData("companyId"),
+                    model,
+                  );
+
+                  setModalState(() => currentStep = 3);
+                },
+
+                // ✅ loading بدل النص
+                child: state is CreateMeetingLoading
+                    ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
+                  ),
+                )
+                    : Text(
                   "confirm_meeting".tr(),
                   style: const TextStyle(
                     color: Colors.white,
@@ -713,51 +744,49 @@ class _OrganizationRequestState extends State<OrganizationRequest> {
   }
 
   // --- Step 3: Success ---
-  Widget _buildStep3() {
-    return Column(
-      children: [
-        const SizedBox(height: 30),
-        const Icon(Icons.check_circle, color: Color(0xFF27AE60), size: 100),
-        const SizedBox(height: 20),
-        Text(
-          "success_msg".tr(),
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          "success_submsg".tr(),
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 14, color: Colors.grey),
-        ),
-        const SizedBox(height: 35),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: primaryOlive,
-              padding: const EdgeInsets.symmetric(vertical: 14),
+  Widget _buildStep3(OrganizationState state) {
+    if (state is CreateMeetingLoading) {
+      return const Column(
+        children: [
+          SizedBox(height: 30),
+          CircularProgressIndicator(),
+          SizedBox(height: 10),
+          Text("جاري إنشاء الطلب..."),
+        ],
+      );
+    }
+    if (state is CreateMeetingSuccess) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+             SnackBar(
+              content: Text("تم بنجاح 🎉"),
+                backgroundColor: AppColors.primaryOlive
             ),
-            onPressed: () {
-              organizationsBox.add(
-                Organization(
-                  name: nameController.text,
-                  description: locationController.text,
-                ),
-              );
-              Navigator.pop(context);
-              _clearControllers();
-            },
-            child: Text(
-              "ok".tr(),
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+          );
+          widget.cubit.getCompanyMeetingsRequests(CacheHelper.getData("companyId"));
+        }
+      });
+      Navigator.pop(context);
+
+    }
+
+    if (state is CreateMeetingError) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: AppColors.primaryOlive
             ),
-          ),
-        ),
-      ],
-    );
+          );
+          widget.cubit.getCompanyMeetingsRequests(CacheHelper.getData("companyId"));
+        }
+      });
+      Navigator.pop(context);
+    }
+
+    return SizedBox();
   }
 
   // UI Helpers
@@ -1104,6 +1133,7 @@ class _OrganizationRequestState extends State<OrganizationRequest> {
 
   void _showAddOrganizationSheet() {
     currentStep = 1;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1111,47 +1141,63 @@ class _OrganizationRequestState extends State<OrganizationRequest> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) => Padding(
-          padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 15,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+      // 👇 مهم جدًا نستخدم (_) مش (context)
+      builder: (_) => BlocProvider.value(
+        value: context.read<OrganizationCubit>(), // ✅ تمرير الكيوبيت
+
+        child: BlocConsumer<OrganizationCubit, OrganizationState>(
+          listener: (context, state) {
+
+          },
+          builder: (context, state) => StatefulBuilder(
+            builder: (context, setModalState) => Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 15,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+              ),
+
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      "request_meeting".tr(),
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    // ===== Header =====
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "request_meeting".tr(),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.close),
+                        ),
+                      ],
                     ),
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close),
-                    ),
+
+                    const SizedBox(height: 10),
+
+                    // ===== Steps =====
+                    if (currentStep == 1)
+                      _buildStep1(setModalState)
+                    else if (currentStep == 2)
+                      _buildStep2(setModalState, state)
+                    else
+                      _buildStep3(state),
                   ],
                 ),
-                // const Divider(),
-                if (currentStep == 1)
-                  _buildStep1(setModalState)
-                else if (currentStep == 2)
-                  _buildStep2(setModalState)
-                else
-                  _buildStep3(),
-              ],
+              ),
             ),
           ),
         ),
       ),
-    ).then((_) => setState(() {}));
+    );
   }
 
   String _getFilterText() {

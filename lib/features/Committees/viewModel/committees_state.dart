@@ -84,8 +84,6 @@ final class CreateCommitteeMemberError extends CommitteesState {
 final class EditMemberLoading extends CommitteesState {}
 
 final class EditMemberSuccess extends CommitteesState {
-  final CommitteesResponseModel data;
-  EditMemberSuccess(this.data);
 }
 
 final class EditMemberError extends CommitteesState {
@@ -97,8 +95,6 @@ final class EditMemberError extends CommitteesState {
 final class DeleteMemberLoading extends CommitteesState {}
 
 final class DeleteMemberSuccess extends CommitteesState {
-  final CommitteesResponseModel data;
-  DeleteMemberSuccess(this.data);
 }
 
 final class DeleteMemberError extends CommitteesState {
