@@ -20,6 +20,18 @@ class OrganizationRemoteDataSource {
     print("response===> ${response.data}");
     return OrganizationsResponseModel.fromJson(response.data);
   }
+  Future<MeetingDetailModel> getCompanyMeetingsDetailById(
+      String companyId,
+      int meetingId,
+      ) async {
+    final response = await DioHelper.get(
+      query: {"Accept-Language": "ar", "pageNumber": "1", "pageSize": "10"},
+      "companies/$companyId/meetings/$meetingId",
+      requiresToken: true,
+    );
+    print("response===> ${response.data}");
+    return MeetingDetailModel.fromJson(response.data);
+  }
 
   Future<OrganizationsRequestsResponseModel> getCompanyMeetingsRequests(
     String companyId,
@@ -34,13 +46,13 @@ class OrganizationRemoteDataSource {
     return OrganizationsRequestsResponseModel.fromJson(response.data);
   }
 
-  Future<MeetingDetailModel> getCompanyMeetingDetail(
+  Future<MeetingDetailModel> getCompanyMeetingRequestDetail(
       String companyId,
       int meetingId,
       ) async {
     final response = await DioHelper.get(
       query: {"Accept-Language": "ar"},
-      "companies/$companyId/meetings/$meetingId",
+      "companies/$companyId/meeting-requests/$meetingId",
       requiresToken: true,
     );
     print("response===> ${response.data}");
@@ -67,9 +79,9 @@ class OrganizationRemoteDataSource {
     int meetingRequestId,
     EditMeetingRequestModel Model,
   ) async {
-    final response = await DioHelper.post(
+    final response = await DioHelper.put(
       query: {"Accept-Language": "ar"},
-      "companies/$companyId/meeting-requests",
+      "companies/$companyId/meeting-requests/$meetingRequestId/start-time",
       requiresToken: true, // المستخدم الجديد مش محتاج توكن
       data: Model.toJson(),
     );
@@ -82,7 +94,7 @@ class OrganizationRemoteDataSource {
   ) async {
     final response = await DioHelper.post(
       query: {"Accept-Language": "ar"},
-      "companies/$companyId/meeting-requests",
+      "companies/$companyId/meeting-requests/$meetingRequestId/cancel",
       requiresToken: true, // المستخدم الجديد مش محتاج توكن
           );
     print("response===> ${response.data}");

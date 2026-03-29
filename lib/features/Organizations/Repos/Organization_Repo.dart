@@ -28,11 +28,11 @@ class OrganizationRepository implements OrganizationRemoteDataSource {
   }
 
   @override
-  Future<MeetingDetailModel> getCompanyMeetingDetail(
+  Future<MeetingDetailModel> getCompanyMeetingRequestDetail(
     String companyId,
     int meetingId,
   ) {
-    return remote.getCompanyMeetingDetail(companyId, meetingId);
+    return remote.getCompanyMeetingRequestDetail(companyId, meetingId);
   }
 
   @override
@@ -55,5 +55,10 @@ class OrganizationRepository implements OrganizationRemoteDataSource {
     EditMeetingRequestModel Model,
   ) {
     return remote.editMeetingTime(companyId, meetingRequestId, Model);
+  }
+
+  @override
+  Future<MeetingDetailModel> getCompanyMeetingsDetailById(String companyId, int meetingId) {
+    return remote.getCompanyMeetingsDetailById(companyId, meetingId);
   }
 }

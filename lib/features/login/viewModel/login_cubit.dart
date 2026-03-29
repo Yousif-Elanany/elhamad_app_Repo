@@ -54,6 +54,7 @@ class LoginCubit extends Cubit<LoginState> {
 
       print("cashed token: ${CacheHelper.getData("token")}");
 
+      print("cashed refToken: ${CacheHelper.getData("refToken")}");
 
       emit(
         VerifyLoginSmsSuccess(

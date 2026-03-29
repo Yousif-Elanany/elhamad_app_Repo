@@ -45,7 +45,7 @@ class OrganizationCubit extends Cubit<OrganizationState> {
     emit(GetMeetingDetailLoading());
 
     try {
-      final response = await repository.getCompanyMeetingDetail(
+      final response = await repository.getCompanyMeetingRequestDetail(
         companyId,
         meetingId,
       );
@@ -94,6 +94,24 @@ class OrganizationCubit extends Cubit<OrganizationState> {
       emit(EditMeetingSuccess());
     } catch (e) {
       emit(EditMeetingError(e.toString()));
+    }
+  }
+
+  // ================= Get Meeting Detail By Id ==================
+  Future<void> getCompanyMeetingDetailById(
+    String companyId,
+    int meetingId,
+  ) async {
+    emit(GetMeetingDetailLoading());
+
+    try {
+      final response = await repository.getCompanyMeetingsDetailById(
+        companyId,
+        meetingId,
+      );
+      emit(GetMeetingDetailSuccess(response));
+    } catch (e) {
+      emit(GetMeetingDetailError(e.toString()));
     }
   }
 }

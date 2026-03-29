@@ -234,21 +234,51 @@ class _BoardMembersPageState extends State<BoardMembersPage> {
           alignment: Alignment.centerLeft,
           child: ActionIconButton(
             onTap: onEditTap,
+            icon: Icons.remove_red_eye,
+            iconColor: AppColors.primaryOlive,
+            backgroundColor: Colors.white,
+            borderColor: AppColors.primaryOlive,
+          ),
+        ),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: ActionIconButton(
+            onTap: onEditTap,
             icon: Icons.edit,
             iconColor: Colors.blue,
             backgroundColor: Colors.white,
             borderColor: Colors.blue,
           ),
         ),
-        const SizedBox(width: 12),
         Align(
           alignment: Alignment.centerLeft,
           child: ActionIconButton(
-            onTap: onDeleteTap,
+            onTap: onEditTap,
             icon: Icons.delete,
             iconColor: Colors.red,
             backgroundColor: Colors.white,
             borderColor: Colors.red,
+          ),
+        ),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: ActionIconButton(
+            onTap: onEditTap,
+            icon: Icons.remove_circle_outline,
+            iconColor: Colors.red,
+            backgroundColor: Colors.white,
+            borderColor: Colors.red,
+          ),
+        ),
+
+        Align(
+          alignment: Alignment.centerLeft,
+          child: ActionIconButton(
+            onTap: onDeleteTap,
+            icon: Icons.request_page_outlined,
+            iconColor: Colors.deepOrange,
+            backgroundColor: Colors.white,
+            borderColor: Colors.deepOrange,
           ),
         ),
       ],

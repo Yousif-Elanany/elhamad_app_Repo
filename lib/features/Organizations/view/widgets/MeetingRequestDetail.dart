@@ -1,3 +1,4 @@
+import 'package:alhamd/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -32,11 +33,31 @@ void showMeetingDetailsSheet({
             );
             cubit.getCompanyMeetingDetail(companyId, meetingId);
           }
+          if (state is CancelMeetingSuccess) {
+            Navigator.pop(sheetContext);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("تم الغاء الموعد بنجاح 🎉"),
+                backgroundColor: Colors.green,
+              ),
+            );
+            cubit.getCompanyMeetingsRequests(companyId);
+          }
+          if (state is CancelMeetingError) {
+            Navigator.pop(sheetContext);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: AppColors.primaryOlive,
+              ),
+            );
+            cubit.getCompanyMeetingsRequests(companyId);
+          }
           if (state is EditMeetingError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),
-                backgroundColor: Colors.red,
+                backgroundColor: AppColors.primaryOlive,
               ),
             );
           }
@@ -44,96 +65,125 @@ void showMeetingDetailsSheet({
         builder: (context, state) {
           return Directionality(
             textDirection: TextDirection.rtl,
-            child: DraggableScrollableSheet(
-              expand: false,
-              initialChildSize: 0.75,
-              minChildSize: 0.5,
-              maxChildSize: 0.95,
-              builder: (_, scrollController) {
-                return Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // ── Header ──
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              // زر إلغاء
-                              OutlinedButton.icon(
-                                onPressed: () => Navigator.pop(sheetContext),
-                                icon: const Icon(Icons.cancel_outlined,
-                                    color: Colors.red, size: 18),
-                                label: const Text("إلغاء",
-                                    style: TextStyle(color: Colors.red)),
-                                style: OutlinedButton.styleFrom(
-                                  side: const BorderSide(color: Colors.red),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8)),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              // زر تعديل — يظهر فقط لو البيانات اتحملت
-                              if (state is GetMeetingDetailSuccess)
-                                OutlinedButton.icon(
-                                  onPressed: () {
-                                    showEditMeetingDialog(
-                                      context: context,
-                                      companyId: companyId,
-                                      meetingRequestId: meetingId,
-                                      currentStartTime:
-                                      state.data.startTime ?? DateTime.now(),
-                                      cubit: cubit,
-                                    );
-                                  },
-                                  icon: const Icon(Icons.edit_outlined, size: 18),
-                                  label: const Text("تعديل الوعد"),
-                                  style: OutlinedButton.styleFrom(
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8)),
+            child: NotificationListener<DraggableScrollableNotification>(
+              onNotification: (notification) {
+                if (notification.extent <= notification.minExtent) {
+                  Navigator.pop(sheetContext);
+                  cubit.getCompanyMeetingsRequests(companyId);                // ✅ لو الشيت اتسحب لتحت النص ده — ينده الـ API
+
+                }
+                return true;
+              },
+              child: DraggableScrollableSheet(
+                expand: false,
+                initialChildSize: 0.75,
+                minChildSize: 0.5,
+                maxChildSize: 0.95,
+                builder: (_, scrollController) {
+                  return Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // ── Header ──
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // عنوان + إغلاق
+                            Row(
+                              children: [
+                                const Text(
+                                  "تفاصيل الجمعيه",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    decoration: TextDecoration.underline,
                                   ),
                                 ),
-                            ],
-                          ),
-                          // عنوان + إغلاق
-                          Row(
-                            children: [
-                              const Text(
-                                "تفاصيل الجمعيه",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  decoration: TextDecoration.underline,
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                // زر إلغاء
+                                OutlinedButton.icon(
+                                  onPressed: () {
+                                    cubit.cancelMeetingRequest(
+                                      companyId,
+                                      meetingId,
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.cancel_outlined,
+                                    color: Colors.red,
+                                    size: 18,
+                                  ),
+                                  label: const Text(
+                                    "إلغاء",
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(color: Colors.red),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 12),
-                              GestureDetector(
-                                onTap: () => Navigator.pop(sheetContext),
-                                child: const Icon(Icons.close),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      // ── Body ──
-                      Expanded(
-                        child: _buildBody(
-                          state: state,
-                          scrollController: scrollController,
-                          companyId: companyId,
-                          meetingId: meetingId,
-                          cubit: cubit,
+                                const SizedBox(width: 8),
+                                // زر تعديل — يظهر فقط لو البيانات اتحملت
+                                if (state is GetMeetingDetailSuccess)
+                                  OutlinedButton.icon(
+                                    onPressed: () {
+                                      showEditMeetingDialog(
+                                        context: context,
+                                        companyId: companyId,
+                                        meetingRequestId: meetingId,
+                                        currentStartTime:
+                                            state.data.startTime ??
+                                            DateTime.now(),
+                                        cubit: cubit,
+                                      );
+                                    },
+                                    icon: const Icon(
+                                      Icons.edit_outlined,
+                                      size: 18,
+                                    ),
+                                    label: const Text("تعديل الموعد"),
+                                    style: OutlinedButton.styleFrom(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                    ),
+                                  ),
+                                const SizedBox(width: 12),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.pop(sheetContext);
+                                    cubit.getCompanyMeetingsRequests(companyId);
+                                  },
+                                  child: const Icon(Icons.close),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              },
+              
+                        const SizedBox(height: 20),
+              
+                        // ── Body ──
+                        Expanded(
+                          child: _buildBody(
+                            state: state,
+                            scrollController: scrollController,
+                            companyId: companyId,
+                            meetingId: meetingId,
+                            cubit: cubit,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
           );
         },
@@ -170,7 +220,8 @@ Widget _buildBody({
           ),
           const SizedBox(height: 12),
           ElevatedButton.icon(
-            onPressed: () => cubit.getCompanyMeetingDetail(companyId, meetingId),
+            onPressed: () =>
+                cubit.getCompanyMeetingDetail(companyId, meetingId),
             icon: const Icon(Icons.refresh),
             label: const Text("إعادة المحاولة"),
           ),
@@ -211,20 +262,14 @@ Widget _buildBody({
               value: meeting.meetingType ?? "-",
             ),
             const Divider(),
-            _buildDetailRow(
-              label: "المدينة",
-              value: meeting.city ?? "-",
-            ),
+            _buildDetailRow(label: "المدينة", value: meeting.city ?? "-"),
             const Divider(),
             _buildDetailRow(
               label: "مكان الاجتماع",
               value: meeting.meetingVenue ?? "-",
             ),
             const Divider(),
-            _buildDetailRow(
-              label: "الملاحظات",
-              value: meeting.notes ?? "-",
-            ),
+            _buildDetailRow(label: "الملاحظات", value: meeting.notes ?? "-"),
             const Divider(),
             _buildDetailRow(
               label: "مطلوب في",
@@ -246,7 +291,7 @@ Widget _buildBody({
               const Text("لا توجد مرفقات")
             else
               ...meeting.attachments.map(
-                    (a) => _buildAttachmentItem(
+                (a) => _buildAttachmentItem(
                   fileName: a.fileName ?? "",
                   onDownload: () {
                     // launchUrl(Uri.parse(a.url ?? ""));
@@ -270,6 +315,12 @@ Widget _buildDetailRow({required String label, required String value}) {
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
+        Text(
+          label,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+        ),
+        const SizedBox(width: 8),
+
         Flexible(
           child: Text(
             value,
@@ -277,11 +328,6 @@ Widget _buildDetailRow({required String label, required String value}) {
             textAlign: TextAlign.left,
             overflow: TextOverflow.ellipsis,
           ),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          label,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
         ),
       ],
     ),
@@ -294,6 +340,10 @@ Widget _buildStatusRow({required String status}) {
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
+        const Text(
+          "الحالة",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+        ),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           decoration: BoxDecoration(
@@ -302,10 +352,6 @@ Widget _buildStatusRow({required String status}) {
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(status, style: const TextStyle(fontSize: 14)),
-        ),
-        const Text(
-          "الحالة",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
         ),
       ],
     ),
@@ -351,12 +397,32 @@ String _formatDateTime(DateTime dateTime) {
 }
 
 String _dayName(int weekday) {
-  const days = ["الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت", "الأحد"];
+  const days = [
+    "الاثنين",
+    "الثلاثاء",
+    "الأربعاء",
+    "الخميس",
+    "الجمعة",
+    "السبت",
+    "الأحد",
+  ];
   return days[weekday - 1];
 }
 
 String _monthName(int month) {
-  const months = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو",
-    "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+  const months = [
+    "يناير",
+    "فبراير",
+    "مارس",
+    "أبريل",
+    "مايو",
+    "يونيو",
+    "يوليو",
+    "أغسطس",
+    "سبتمبر",
+    "أكتوبر",
+    "نوفمبر",
+    "ديسمبر",
+  ];
   return months[month - 1];
 }

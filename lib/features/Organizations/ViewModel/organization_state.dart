@@ -85,3 +85,19 @@ class EditMeetingError extends OrganizationState {
 
   EditMeetingError(this.message);
 }
+// ===== Edit Meeting =====
+class getCompanyMeetingsDetailByIdLoading extends OrganizationState {}
+
+class getCompanyMeetingsDetailByIdSuccess extends OrganizationState {
+  final MeetingDetailModel data;
+
+  getCompanyMeetingsDetailByIdSuccess(this.data);
+}
+
+class getCompanyMeetingsDetailByIdError extends OrganizationState {
+  final String message;
+
+  getCompanyMeetingsDetailByIdError(this.message);
+}
+
+

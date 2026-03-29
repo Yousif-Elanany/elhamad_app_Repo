@@ -1,4 +1,6 @@
+import 'package:alhamd/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../ViewModel/organization_cubit.dart';
@@ -18,40 +20,51 @@ Future<void> showEditMeetingDialog({
     builder: (dialogContext) {
       return BlocListener<OrganizationCubit, OrganizationState>(
         bloc: cubit,
-        listener: (context, state) {
+        listener: (listenerContext, state) {
           if (state is EditMeetingSuccess) {
             Navigator.pop(dialogContext);
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("تم تعديل الموعد بنجاح 🎉"),
-                backgroundColor: Colors.green,
-              ),
-            );
+            Navigator.pop(dialogContext);
+
+            // ✅ استخدم context الأصلي بتاع الـ sheet مش context الدايلوج
+            SchedulerBinding.instance.addPostFrameCallback((_) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("تم تعديل الموعد بنجاح 🎉"),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            });
+            cubit.getCompanyMeetingsRequests(companyId);
           }
           if (state is EditMeetingError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
-            );
+            Navigator.pop(dialogContext);
+            Navigator.pop(dialogContext);
+
+            // SchedulerBinding.instance.addPostFrameCallback((_) {
+            //   ScaffoldMessenger.of(context).showSnackBar(
+            //     SnackBar(
+            //       content: Text(state.message),
+            //       backgroundColor: Colors.red,
+            //     ),
+            //   );
+            // });
+            cubit.getCompanyMeetingsRequests(companyId);
           }
         },
         child: StatefulBuilder(
-          builder: (context, setState) {
+          builder: (statefulContext, setState) {
             return AlertDialog(
+              backgroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
+              // ── Title ──
               title: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
                     "تعديل الوعد",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close),
@@ -59,32 +72,40 @@ Future<void> showEditMeetingDialog({
                   ),
                 ],
               ),
+
+              // ── Content ──
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  const Text(
-                    "تاريخ ووقت بدء الاجتماع",
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                  const Align(
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      "تاريخ ووقت بدء الاجتماع",
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
                   ),
                   const SizedBox(height: 8),
+
                   // ── حقل التاريخ والوقت ──
                   GestureDetector(
                     onTap: () async {
-                      // 1) اختيار التاريخ
+                      // ✅ استخدم dialogContext مش statefulContext
                       final pickedDate = await showDatePicker(
-                        context: context,
-                        initialDate: selectedDateTime,
+                        context: dialogContext,
+                        // ✅ الحل — لو التاريخ في الماضي ابدأ من النهارده
+                        initialDate: selectedDateTime.isBefore(DateTime.now())
+                            ? DateTime.now()
+                            : selectedDateTime,
                         firstDate: DateTime.now(),
                         lastDate: DateTime(2100),
                       );
                       if (pickedDate == null) return;
 
-                      // 2) اختيار الوقت
+                      // ✅ استخدم dialogContext هنا كمان
                       final pickedTime = await showTimePicker(
-                        context: context,
-                        initialTime:
-                        TimeOfDay.fromDateTime(selectedDateTime),
+                        context: dialogContext,
+                        initialTime: TimeOfDay.fromDateTime(selectedDateTime),
                       );
                       if (pickedTime == null) return;
 
@@ -99,6 +120,7 @@ Future<void> showEditMeetingDialog({
                       });
                     },
                     child: Container(
+                      width: double.infinity,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 14,
@@ -107,79 +129,97 @@ Future<void> showEditMeetingDialog({
                         border: Border.all(color: Colors.grey.shade300),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text(
-                            "${selectedDateTime.year}/${selectedDateTime.month.toString().padLeft(2, '0')}/${selectedDateTime.day.toString().padLeft(2, '0')}  ${selectedDateTime.hour.toString().padLeft(2, '0')}:${selectedDateTime.minute.toString().padLeft(2, '0')}",
-                            style: const TextStyle(fontSize: 15),
-                          ),
-                        ],
+                      child: Text(
+                        "${selectedDateTime.year}/${selectedDateTime.month.toString().padLeft(2, '0')}/${selectedDateTime.day.toString().padLeft(2, '0')}  "
+                        "${selectedDateTime.hour.toString().padLeft(2, '0')}:${selectedDateTime.minute.toString().padLeft(2, '0')}",
+                        textAlign: TextAlign.end,
+                        style: const TextStyle(fontSize: 15),
                       ),
                     ),
                   ),
-                ],
-              ),
-              actions: [
-                // زر إلغاء
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(dialogContext),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: const Text("إلغاء"),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                // زر حفظ
-                Expanded(
-                  child: BlocBuilder<OrganizationCubit, OrganizationState>(
+
+                  const SizedBox(height: 20),
+
+                  // ── الأزرار في النص ✅ ──
+                  BlocBuilder<OrganizationCubit, OrganizationState>(
                     bloc: cubit,
                     builder: (context, state) {
                       final isLoading = state is EditMeetingLoading;
-                      return ElevatedButton(
-                        onPressed: isLoading
-                            ? null
-                            : () {
-                          final model = EditMeetingRequestModel(
-                            startTime:
-                            selectedDateTime,
-                          );
-                          cubit.editMeetingTime(
-                            companyId,
-                            meetingRequestId,
-                            model,
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF7D7D3C),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                      return Row(
+                        children: [
+                          // زر حفظ
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: isLoading
+                                  ? null
+                                  : () {
+                                      final model = EditMeetingRequestModel(
+                                        startTime: selectedDateTime,
+                                      );
+                                      cubit.editMeetingTime(
+                                        companyId,
+                                        meetingRequestId,
+                                        model,
+                                      );
+                                    },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primaryOlive,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: isLoading
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Text(
+                                      "حفظ",
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                            ),
                           ),
-                        ),
-                        child: isLoading
-                            ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
+
+                          const SizedBox(width: 12),
+
+                          // زر إلغاء بحواف ذهبية ✅
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.pop(dialogContext),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                                side: BorderSide(
+                                  color: AppColors.primaryOlive, // ✅ حواف ذهبية
+                                  width: 1.5,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: Text(
+                                "إلغاء",
+                                style: TextStyle(color: AppColors.primaryOlive),
+                              ),
+                            ),
                           ),
-                        )
-                            : const Text(
-                          "حفظ",
-                          style: TextStyle(color: Colors.white),
-                        ),
+                        ],
                       );
                     },
                   ),
-                ),
-              ],
+                ],
+              ),
+
+              // ✅ فاضي — الأزرار اتنقلت للـ content
+              actions: const [],
             );
           },
         ),

@@ -1,13 +1,13 @@
+import 'package:alhamd/features/managments/Models/BoardDetailModel.dart';
 import 'package:alhamd/features/managments/views/widgets/addBoard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/cache_helper.dart';
-import '../../../../core/widgets/ActionIconButton.dart';
-import '../../../../core/widgets/chatDialog.dart';
+
 import '../../viewModel/management_cubit.dart';
+import 'BoardDetailWidget.dart';
 import 'MembersScreen.dart';
 import 'managmentWidget.dart';
 
@@ -106,7 +106,14 @@ class _BoardTabContentState extends State<BoardTabContent> {
                           availableSeats:
                               board.openPositionCount?.toString() ?? '0',
                           status: board.isActive ? "نشط" : "غير نشط",
-                          onViewTap: () => print("عرض التفاصيل"),
+                          onViewTap: () {
+                            showBoardDetailsDialog(
+                              board,
+                              context,
+
+
+                            );
+                          },
                           onGroupTap: () {
                             Navigator.push(
                               context,

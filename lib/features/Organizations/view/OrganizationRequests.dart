@@ -1,3 +1,4 @@
+import 'package:alhamd/features/Organizations/view/widgets/MeetingRequestDetail.dart';
 import 'package:alhamd/features/Organizations/view/widgets/OrganizationRequestWidget.dart';
 import 'package:alhamd/features/Organizations/view/widgets/OrganizationWidget.dart';
 import 'package:alhamd/features/Organizations/view/widgets/StepCircle.dart';
@@ -1378,8 +1379,14 @@ class _OrganizationRequestState extends State<OrganizationRequest> {
                           status: request.status ?? "قيد الانتظار", // حسب API
 
                           onViewTap: () {
-                            // TODO: تفاصيل الطلب
-                          },
+                            print(request.id);
+                            showMeetingDetailsSheet(
+                              context: context,
+                              companyId: CacheHelper.getData("companyId"),
+                              meetingId: request.id, // int
+                              cubit: context.read<OrganizationCubit>(),
+                            );
+                            },
 
                           onGroupTap: () {
                             // TODO: navigation لو محتاج

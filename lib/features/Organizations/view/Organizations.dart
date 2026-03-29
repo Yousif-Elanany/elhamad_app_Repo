@@ -1,3 +1,5 @@
+import 'package:alhamd/features/Organizations/view/widgets/MeetingCard.dart';
+import 'package:alhamd/features/Organizations/view/widgets/MeetingRequestDetail.dart';
 import 'package:alhamd/features/Organizations/view/widgets/OrganizationWidget.dart';
 import 'package:alhamd/features/Organizations/view/widgets/StepCircle.dart';
 import 'package:file_picker/file_picker.dart';
@@ -1275,7 +1277,6 @@ class _OrganizationsState extends State<Organizations> {
                     );
                   }
 
-                  /// 📋 List
                   return ListView.separated(
                     padding: const EdgeInsets.all(12),
                     itemCount: meetings.length,
@@ -1283,40 +1284,23 @@ class _OrganizationsState extends State<Organizations> {
                     itemBuilder: (context, index) {
                       final meeting = meetings[index];
 
-                      return OrganizationWidget(
-                        caseName: meeting.id?.toString() ?? '',
-
-                        startDate: meeting.startTime != null
-                            ? DateFormat('yyyy/MM/dd').format(meeting.startTime!)
-                            : '',
-
-                        endDate: meeting.createdAt != null
-                            ? DateFormat('yyyy/MM/dd').format(meeting.createdAt!)
-                            : '',
-
-                        boardMembers: meeting.id?.toString() ?? '0',
-                        activeMembers: meeting.id?.toString() ?? '0',
-                        availableSeats: meeting.id?.toString() ?? '0',
-
-                        status:  "نشط" ,
-
-                        onViewTap: () {
-                          // TODO: تفاصيل الاجتماع
-                        },
-
-                        onGroupTap: () {
-                          // Navigator.push(
-                          //   context,
-                          //   MaterialPageRoute(
-                          //     builder: (_) => BlocProvider.value(
-                          //       value: context.read<OrganizationCubit>(),
-                          //       child: BoardMembersPage(
-                          //         boardId: meeting.id?.toString() ?? '',
-                          //         cubit: context.read<OrganizationCubit>(),
-                          //       ),
-                          //     ),
-                          //   ),
-                          // );
+                      return MeetingCard(
+                        startTime: meeting.startTime ?? DateTime.now(),
+                        location: meeting.meetingVenue ?? "عن بعد",
+                        link: meeting.link,
+                        assignedBy: "محدد بواسطتك",
+                        firstQuorumPercentage: meeting.quorumInfo.requiredPercentage ?? 50,
+                        secondQuorumPercentage: meeting.quorumInfo.currentPercentage ?? 0,
+                        currentAttempt: 1,
+                        totalAttempts: 2,
+                        onDetailsTap: () {
+                          // ✅ فتح الشيت وجلب التفاصيل
+                          showMeetingDetailsSheet(
+                            context: context,
+                            companyId: CacheHelper.getData("companyId"),
+                            meetingId: meeting.id!,
+                            cubit: context.read<OrganizationCubit>(),
+                          );
                         },
                       );
                     },
