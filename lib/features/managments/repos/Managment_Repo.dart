@@ -1,9 +1,12 @@
 import 'package:alhamd/features/Committees/Model/UsersSigntureRequestModel.dart';
 import 'package:alhamd/features/home/models/SubscriptionsModel.dart';
 import 'package:alhamd/features/managments/Models/CreateBoardMemberRequestlModel.dart';
+import 'package:alhamd/features/managments/Models/CreateShareHolderRequest.dart';
 import 'package:alhamd/features/managments/Models/DiewctorModel.dart';
+import 'package:alhamd/features/managments/Models/GetShareHolderDetailModel.dart';
 import 'package:alhamd/features/managments/Models/MemberModel.dart';
 import 'package:alhamd/features/managments/Models/editMemberOfBoardRequestModel.dart';
+import 'package:alhamd/features/managments/Models/editShareModel.dart';
 import 'package:alhamd/features/managments/Models/endMemberMemberShipModel.dart';
 import 'package:alhamd/features/managments/Models/memberOfBoardResponseModel.dart';
 import 'package:alhamd/features/managments/services/management_Remote_Data_Source.dart';
@@ -99,5 +102,30 @@ class ManagementRepository implements ManagementRemoteDataSource {
   @override
   sendSignatureRequest(String companyId, UsersSigntureRequestModel model) {
     return remote.sendSignatureRequest(companyId, model);
+  }
+
+  @override
+  Future<void> createShareHolder(
+    String companyId,
+    CreateShareHolderRequestModel model,
+  ) {
+    return remote.createShareHolder(companyId, model);
+  }
+
+  @override
+  Future<void> editShareHolderByProfileId(
+    String companyId,
+    int profileId,
+    EditShareHolderRequestModel model,
+  ) {
+    return remote.editShareHolderByProfileId(companyId, profileId, model);
+  }
+
+  @override
+  Future<ShareHolderByProfileIdResponseModel> getShareHolderById(
+    String companyId,
+    int profileId,
+  ) {
+    return remote.getShareHolderById(companyId, profileId);
   }
 }

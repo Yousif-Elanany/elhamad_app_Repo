@@ -1,19 +1,30 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/services.dart';
 
-
-
-// ─── Main Dialog ────────────────────────────────────────────────────────────
+import '../../Models/CreateBoardMemberRequestlModel.dart';
+import '../../viewModel/management_cubit.dart';
 
 class AddMemberDialog extends StatefulWidget {
-  const AddMemberDialog({super.key});
+  final String companyId;
+  final int boardId;
+  final ManagementCubit cubit;
+
+  const AddMemberDialog({
+    super.key,
+    required this.companyId,
+    required this.boardId,
+    required this.cubit,
+  });
 
   @override
   State<AddMemberDialog> createState() => _AddMemberDialogState();
 }
 
 class _AddMemberDialogState extends State<AddMemberDialog> {
+  final _step1FormKey = GlobalKey<FormState>();
+  final _step2FormKey = GlobalKey<FormState>();
   int _step = 0;
 
   // Personal data
@@ -29,8 +40,11 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
   // Job data
   String? _jobTitle;
   String? _memberType;
-  DateTime _startDate = DateTime.now();
+  DateTime? _startDate;
   File? _pickedImage;
+  int? _uploadedDocumentId; // من الـ upload API
+
+  bool _isUploading = false;
 
   @override
   void dispose() {
@@ -41,6 +55,82 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
     _nationalIdCtrl.dispose();
     _addressCtrl.dispose();
     super.dispose();
+  }
+
+  // ── Upload Image ──────────────────────────────────────────────────────────
+
+  Future<void> _pickAndUploadImage() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['jpg', 'jpeg', 'png'],
+    );
+    if (result == null || result.files.single.path == null) return;
+
+    setState(() {
+      _pickedImage = File(result.files.single.path!);
+      _isUploading = true;
+    });
+
+    try {
+      // TODO: استبدل بـ API الرفع الحقيقي عندك
+      // final docId = await repository.uploadDocument(_pickedImage!);
+      // setState(() => _uploadedDocumentId = docId);
+
+      // مؤقتاً لو مفيش upload API
+      setState(() => _uploadedDocumentId = 1);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('فشل رفع الصورة: $e'), backgroundColor: Colors.red),
+      );
+      setState(() => _pickedImage = null);
+    } finally {
+      setState(() => _isUploading = false);
+    }
+  }
+
+  // ── Save ──────────────────────────────────────────────────────────────────
+
+  void _onSave() {
+    if (!(_step2FormKey.currentState?.validate() ?? false)) return;
+
+    final model = CreateBoardMemberRequestlModel(
+      personalInfo: PersonalInfo(
+        name: _nameEnCtrl.text.trim(),
+        nameAr: _nameArCtrl.text.trim(),
+        phoneNumber: _phoneCtrl.text.trim(),
+        nationalId: _nationalIdCtrl.text.trim(),
+        email: _emailCtrl.text.trim(),
+        dateOfBirth: _birthDate!,
+        nationality: _nationality ?? '',
+        address: _addressCtrl.text.trim(),
+        profilePictureDocumentId: _uploadedDocumentId ?? 1,
+      ),
+      jobTitle: "0",
+      membershipType: "0",
+      startDate: _startDate!,
+    );
+
+    widget.cubit.createMemberRequest(widget.companyId, widget.boardId, model);
+    Navigator.of(context).pop();
+  }
+
+  // ── Next (Step 1 → Step 2) ────────────────────────────────────────────────
+
+  void _onNext() {
+    if (_step1FormKey.currentState?.validate() ?? false) {
+      // تحقق إضافي للـ date picker لأنه مش TextFormField
+      if (_birthDate == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('يرجى اختيار تاريخ الميلاد'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+      setState(() => _step = 1);
+    }
   }
 
   @override
@@ -83,10 +173,10 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            'إضافة عضو',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF1C1C1C)),
-          ),
+          const Text('إضافة عضو',
+              style: TextStyle(fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1C1C1C))),
           IconButton(
             onPressed: () => Navigator.of(context).pop(),
             icon: const Icon(Icons.close, color: Color(0xFF9E9E9E)),
@@ -131,29 +221,26 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
                       : isDone
                       ? const Color(0xFFc5d0a8)
                       : const Color(0xFFE0E0E0),
-                  child: Text(
-                    '${idx + 1}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: isActive
-                          ? Colors.white
-                          : isDone
-                          ? const Color(0xFF4a5a33)
-                          : const Color(0xFF9E9E9E),
-                    ),
-                  ),
+                  child: Text('${idx + 1}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: isActive
+                            ? Colors.white
+                            : isDone
+                            ? const Color(0xFF4a5a33)
+                            : const Color(0xFF9E9E9E),
+                      )),
                 ),
               ),
               const SizedBox(width: 6),
-              Text(
-                steps[idx],
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
-                  color: isActive ? const Color(0xFF7a8c5e) : const Color(0xFF9E9E9E),
-                ),
-              ),
+              Text(steps[idx],
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+                    color: isActive ? const Color(0xFF7a8c5e) : const Color(
+                        0xFF9E9E9E),
+                  )),
             ],
           );
         }),
@@ -162,63 +249,144 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
   }
 
   // ── Personal Step ─────────────────────────────────────────────────────────
+  final Map<String, String> jobTitles = {
+    'مدير': '0',
+    'مهندس': '1',
+    'محلل': '2',
+    'مطور': '3',
+  };
 
   Widget _buildPersonalStep() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _sectionTitle('البيانات الشخصية:'),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(child: _field('اسم الموظف (بالإنجليزية)', 'أدخل الاسم بالإنجليزية', _nameEnCtrl, required: true)),
-            const SizedBox(width: 12),
-            Expanded(child: _field('الإسم (باللغة العربية)', 'أدخل الاسم بالعربية', _nameArCtrl, required: true)),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(child: _datePicker('تاريخ الميلاد', _birthDate, (d) => setState(() => _birthDate = d), required: true)),
-            const SizedBox(width: 12),
-            Expanded(child: _field('رقم الهاتف', 'أدخل رقم الهاتف', _phoneCtrl, required: true, keyboardType: TextInputType.phone)),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(child: _field('البريد الإلكتروني', 'أدخل البريد الإلكتروني', _emailCtrl, required: true, keyboardType: TextInputType.emailAddress)),
-            const SizedBox(width: 12),
-            Expanded(child: _field('رقم الهوية', 'أدخل رقم الهوية الوطنية', _nationalIdCtrl, required: true)),
-          ],
-        ),
-        const SizedBox(height: 12),
-        _dropdown('الجنسية', ['سعودي', 'مصري', 'أردني', 'أخرى'], _nationality,
-                (v) => setState(() => _nationality = v), optional: true),
-        const SizedBox(height: 12),
-        _multilineField('العنوان', 'أدخل تفاصيل العنوان', _addressCtrl, optional: true),
-      ],
+    return Form(
+      key: _step1FormKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _sectionTitle('البيانات الشخصية:'),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(child: _field(
+                  'اسم الموظف (بالإنجليزية)', 'أدخل الاسم بالإنجليزية',
+                  _nameEnCtrl, required: true)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _field(
+                  'الإسم (باللغة العربية)',
+                  'أدخل الاسم بالعربية',
+                  _nameArCtrl,
+                  required: true,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(
+                        RegExp(r'[\u0600-\u06FF\s]')),
+                  ],
+                  validator: (v) {
+                    if (v == null || v
+                        .trim()
+                        .isEmpty) return 'هذا الحقل مطلوب.';
+                    if (!RegExp(r'^[\u0600-\u06FF\s]+$').hasMatch(v.trim())) {
+                      return 'يرجى الكتابة بالعربية فقط.';
+                    }
+                    return null;
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _datePicker(
+                  'تاريخ الميلاد',
+                  _birthDate,
+                      (d) => setState(() => _birthDate = d),
+                  required: true,
+                  firstDate: DateTime(1950),
+                  lastDate: DateTime.now(),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _field('رقم الهاتف', 'أدخل رقم الهاتف', _phoneCtrl,
+                    required: true, keyboardType: TextInputType.phone),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _field(
+                    'البريد الإلكتروني', 'أدخل البريد الإلكتروني', _emailCtrl,
+                    required: true,
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (v) {
+                      if (v == null || v.isEmpty) return 'هذا الحقل مطلوب.';
+                      if (!RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(
+                          v)) {
+                        return 'البريد الإلكتروني غير صحيح.';
+                      }
+                      return null;
+                    }),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _field(
+                    'رقم الهوية', 'أدخل رقم الهوية الوطنية', _nationalIdCtrl,
+                    required: true),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _dropdown(
+            'الجنسية',
+            ['سعودي', 'مصري', 'أردني', 'أخرى'],
+            _nationality,
+                (v) => setState(() => _nationality = v),
+            optional: true,
+          ),
+          const SizedBox(height: 12),
+          _multilineField(
+              'العنوان', 'أدخل تفاصيل العنوان', _addressCtrl, optional: true),
+        ],
+      ),
     );
   }
 
   // ── Job Step ──────────────────────────────────────────────────────────────
 
   Widget _buildJobStep() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _sectionTitle('البيانات الوظيفية:'),
-        const SizedBox(height: 16),
-        _uploadArea(),
-        const SizedBox(height: 16),
-        _dropdown('المسمى الوظيفي', ['مدير', 'مهندس', 'محلل', 'مطور'], _jobTitle,
-                (v) => setState(() => _jobTitle = v), required: true, hint: 'اختر المسمى الوظيفي'),
-        const SizedBox(height: 12),
-        _dropdown('نوع العضوية', ['عضو كامل', 'عضو مشارك', 'عضو شرفي'], _memberType,
-                (v) => setState(() => _memberType = v), required: true),
-        const SizedBox(height: 12),
-        _datePicker('تاريخ البداية', _startDate, (d) => setState(() => _startDate = d), required: true),
-      ],
+    return Form(
+      key: _step2FormKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _sectionTitle('البيانات الوظيفية:'),
+          const SizedBox(height: 16),
+          _uploadArea(),
+          const SizedBox(height: 16),
+          _dropdown(
+            'المسمى الوظيفي',
+            jobTitles.keys.toList(), // لعرض النصوص العربية
+            _jobTitle,
+                (v) => setState(() => _jobTitle = v),
+            required: true,
+            hint: 'اختر المسمى الوظيفي',
+          ),
+          const SizedBox(height: 12),
+          _dropdown(
+            'نوع العضوية',
+            ['عضو كامل', 'عضو مشارك', 'عضو شرفي'],
+            _memberType,
+                (v) => setState(() => _memberType = v),
+            required: true,
+          ),
+          const SizedBox(height: 12),
+          // ✅ تاريخ البداية من اليوم فقط
+          _startDatePickerForm(),
+        ],
+      ),
     );
   }
 
@@ -233,7 +401,6 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Cancel
           OutlinedButton(
             onPressed: () => Navigator.of(context).pop(),
             style: OutlinedButton.styleFrom(
@@ -260,21 +427,14 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
                 const SizedBox(width: 10),
               ],
               ElevatedButton(
-                onPressed: () {
-                  if (_step == 0) {
-                    setState(() => _step = 1);
-                  } else {
-                    Navigator.of(context).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('تم الحفظ بنجاح!')),
-                    );
-                  }
-                },
+                onPressed: _step == 0 ? _onNext : _onSave,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF7a8c5e),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 28, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                   elevation: 0,
                 ),
                 child: Text(_step == 0 ? 'التالي' : 'حفظ',
@@ -294,26 +454,44 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(text,
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF1C1C1C))),
+            style: const TextStyle(fontSize: 17,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1C1C1C))),
         const SizedBox(height: 6),
         const Divider(color: Color(0xFFEEEDEA)),
       ],
     );
   }
 
-  Widget _field(String label, String hint, TextEditingController ctrl,
-      {bool required = false, TextInputType keyboardType = TextInputType.text}) {
+
+  Widget _field(String label,
+      String hint,
+      TextEditingController ctrl, {
+        bool required = false,
+        TextInputType keyboardType = TextInputType.text,
+        String? Function(String?)? validator,
+        List<TextInputFormatter>? inputFormatters, // ✅
+      }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _label(label, required: required),
         const SizedBox(height: 4),
-        TextField(
+        TextFormField(
           controller: ctrl,
           keyboardType: keyboardType,
           textAlign: TextAlign.right,
           style: const TextStyle(fontSize: 13),
           decoration: _inputDeco(hint),
+          inputFormatters: inputFormatters,
+          // ✅
+          validator: validator ??
+              (required
+                  ? (v) =>
+              (v == null || v
+                  .trim()
+                  .isEmpty) ? 'هذا الحقل مطلوب.' : null
+                  : null),
         ),
       ],
     );
@@ -326,7 +504,7 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
       children: [
         _label(label, optional: optional),
         const SizedBox(height: 4),
-        TextField(
+        TextFormField(
           controller: ctrl,
           maxLines: 3,
           textAlign: TextAlign.right,
@@ -337,8 +515,15 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
     );
   }
 
-  Widget _dropdown(String label, List<String> items, String? value, ValueChanged<String?> onChanged,
-      {bool required = false, bool optional = false, String hint = 'اختر'}) {
+  // DropdownButtonFormField بـ validator
+  Widget _dropdown(String label,
+      List<String> items,
+      String? value,
+      ValueChanged<String?> onChanged, {
+        bool required = false,
+        bool optional = false,
+        String hint = 'اختر',
+      }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -347,10 +532,19 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
         DropdownButtonFormField<String>(
           value: value,
           isExpanded: true,
-          hint: Text(hint, style: const TextStyle(fontSize: 13, color: Color(0xFFAAAAAA))),
+          hint: Text(
+            hint,
+            style: const TextStyle(fontSize: 13, color: Color(0xFFAAAAAA)),
+          ),
           decoration: _inputDeco(''),
           items: items
-              .map((e) => DropdownMenuItem(value: e, child: Text(e, style: const TextStyle(fontSize: 13))))
+              .map(
+                (e) =>
+                DropdownMenuItem(
+                  value: e,
+                  child: Text(e, style: const TextStyle(fontSize: 13)),
+                ),
+          )
               .toList(),
           onChanged: onChanged,
         ),
@@ -358,10 +552,16 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
     );
   }
 
-  Widget _datePicker(String label, DateTime? value, ValueChanged<DateTime> onPicked,
-      {bool required = false}) {
+  Widget _datePicker(String label,
+      DateTime? value,
+      ValueChanged<DateTime> onPicked, {
+        bool required = false,
+        DateTime? firstDate,
+        DateTime? lastDate,
+      }) {
     final display = value != null
-        ? '${value.day.toString().padLeft(2, '0')}/${value.month.toString().padLeft(2, '0')}/${value.year}'
+        ? '${value.day.toString().padLeft(2, '0')}/${value.month.toString()
+        .padLeft(2, '0')}/${value.year}'
         : 'اختر التاريخ';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -373,8 +573,8 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
             final picked = await showDatePicker(
               context: context,
               initialDate: value ?? DateTime.now(),
-              firstDate: DateTime(1950),
-              lastDate: DateTime(2100),
+              firstDate: firstDate ?? DateTime(1950),
+              lastDate: lastDate ?? DateTime(2100),
             );
             if (picked != null) onPicked(picked);
           },
@@ -392,12 +592,87 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
                 Text(display,
                     style: TextStyle(
                         fontSize: 13,
-                        color: value != null ? const Color(0xFF333333) : const Color(0xFFAAAAAA))),
+                        color: value != null
+                            ? const Color(0xFF333333)
+                            : const Color(0xFFAAAAAA))),
               ],
             ),
           ),
         ),
       ],
+    );
+  }
+
+  // ✅ تاريخ البداية كـ FormField عشان الـ validation يشتغل
+  Widget _startDatePickerForm() {
+    final today = DateTime(DateTime
+        .now()
+        .year, DateTime
+        .now()
+        .month, DateTime
+        .now()
+        .day);
+    return FormField<DateTime>(
+      initialValue: _startDate,
+      validator: (v) => v == null ? 'يرجى اختيار تاريخ البداية.' : null,
+      builder: (field) {
+        final display = field.value != null
+            ? '${field.value!.day.toString().padLeft(2, '0')}/${field.value!
+            .month.toString().padLeft(2, '0')}/${field.value!.year}'
+            : 'اختر التاريخ';
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _label('تاريخ البداية', required: true),
+            const SizedBox(height: 4),
+            InkWell(
+              onTap: () async {
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: today,
+                  firstDate: today, // ✅ مينفعش قبل النهارده
+                  lastDate: DateTime(2100),
+                );
+                if (picked != null) {
+                  setState(() => _startDate = picked);
+                  field.didChange(picked);
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 13),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: field.hasError ? Colors.red : const Color(
+                        0xFFCCCCCC),
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                  color: Colors.white,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Icon(Icons.calendar_today_outlined, size: 18,
+                        color: Color(0xFF9E9E9E)),
+                    Text(display,
+                        style: TextStyle(
+                            fontSize: 13,
+                            color: field.value != null
+                                ? const Color(0xFF333333)
+                                : const Color(0xFFAAAAAA))),
+                  ],
+                ),
+              ),
+            ),
+            if (field.hasError)
+              Padding(
+                padding: const EdgeInsets.only(top: 6, right: 12),
+                child: Text(field.errorText!,
+                    style: const TextStyle(color: Colors.red, fontSize: 12)),
+              ),
+          ],
+        );
+      },
     );
   }
 
@@ -408,16 +683,10 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
         _label('الصورة الشخصية', optional: true),
         const SizedBox(height: 4),
         GestureDetector(
-          onTap: () async {
-            final result = await FilePicker.platform.pickFiles(
-              type: FileType.custom,
-              allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf', 'doc'],
-            );
-            if (result != null && result.files.single.path != null) {
-              setState(() => _pickedImage = File(result.files.single.path!));
-            }
-          },
-          child: _pickedImage != null
+          onTap: _isUploading ? null : _pickAndUploadImage,
+          child: _isUploading
+              ? _buildLoadingUpload()
+              : _pickedImage != null
               ? _buildPreview()
               : _buildDropZone(),
         ),
@@ -425,10 +694,24 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
     );
   }
 
+  Widget _buildLoadingUpload() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 24),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        color: const Color(0xFFF9F9F7),
+        border: Border.all(color: const Color(0xFFCCCCCC)),
+      ),
+      child: const Center(
+        child: CircularProgressIndicator(color: Color(0xFF7a8c5e)),
+      ),
+    );
+  }
+
   Widget _buildDropZone() {
     return Container(
       width: double.infinity,
-
       padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
@@ -464,7 +747,7 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
             ),
           ),
           const SizedBox(height: 4),
-          const Text('PDF,DOC,PNG أو JPG (2 MB)',
+          const Text('PNG أو JPG (2 MB)',
               style: TextStyle(fontSize: 11, color: Color(0xFFAAAAAA))),
         ],
       ),
@@ -473,9 +756,6 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
 
   Widget _buildPreview() {
     final name = _pickedImage!.path.split('/').last;
-    final ext = name.split('.').last.toLowerCase();
-    final isImage = ['jpg', 'jpeg', 'png'].contains(ext);
-
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
@@ -485,32 +765,24 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
       ),
       child: Row(
         children: [
-          if (isImage)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: Image.file(_pickedImage!, width: 48, height: 48, fit: BoxFit.cover),
-            )
-          else
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: const Color(0xFFDDE5CC),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: const Icon(Icons.insert_drive_file_outlined, color: Color(0xFF7a8c5e)),
-            ),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: Image.file(
+                _pickedImage!, width: 48, height: 48, fit: BoxFit.cover),
+          ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              name,
-              style: const TextStyle(fontSize: 13, color: Color(0xFF333333)),
-              overflow: TextOverflow.ellipsis,
-            ),
+            child: Text(name,
+                style: const TextStyle(fontSize: 13, color: Color(0xFF333333)),
+                overflow: TextOverflow.ellipsis),
           ),
           IconButton(
             icon: const Icon(Icons.close, size: 18, color: Color(0xFF888888)),
-            onPressed: () => setState(() => _pickedImage = null),
+            onPressed: () =>
+                setState(() {
+                  _pickedImage = null;
+                  _uploadedDocumentId = null;
+                }),
           ),
         ],
       ),
@@ -523,12 +795,13 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
         style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF444444)),
         children: [
           TextSpan(text: text),
-          if (required)
-            const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+          if (required) const TextSpan(
+              text: ' *', style: TextStyle(color: Colors.red)),
           if (optional)
             const TextSpan(
                 text: ' (اختياري)',
-                style: TextStyle(color: Color(0xFFAAAAAA), fontWeight: FontWeight.normal)),
+                style: TextStyle(
+                    color: Color(0xFFAAAAAA), fontWeight: FontWeight.normal)),
         ],
       ),
     );
@@ -550,6 +823,14 @@ class _AddMemberDialogState extends State<AddMemberDialog> {
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
         borderSide: const BorderSide(color: Color(0xFF7a8c5e), width: 1.5),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Colors.red),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10),
+        borderSide: const BorderSide(color: Colors.red, width: 1.5),
       ),
       filled: true,
       fillColor: Colors.white,

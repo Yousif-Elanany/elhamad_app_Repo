@@ -122,10 +122,10 @@ class FirstDialog extends StatelessWidget {
 
             ElevatedButton.icon(
               onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => const AddMemberDialog(),
-                );
+                // showDialog(
+                //   context: context,
+                //   builder: (context) => const AddMemberDialog(),
+                // );
               },
               icon: const Icon(Icons.add, color: Colors.white),
               label: const Text(

@@ -8,6 +8,9 @@ import '../constants/app_colors.dart';
 import 'cache_helper.dart';
 import 'handleErrors/ApiException.dart';
 
+bool _isRefreshing = false;
+List<Function(String token)> _queue = [];
+
 class ApiInterceptor extends Interceptor {
   final Dio dio;
   final Future<String?> Function() getAccessToken;
@@ -29,9 +32,7 @@ class ApiInterceptor extends Interceptor {
     if (requiresToken && !options.headers.containsKey('Authorization')) {
       // نحاول نجيب التوكن من getAccessToken أولاً
       String? token = await getAccessToken();
-
-      // لو null، نجرب نجيب من CacheHelper
-      token = CacheHelper.getData("token");
+      token ??= CacheHelper.getData("token");
 
       print("🔑 [Interceptor] Token from getAccessToken: $token");
 
@@ -51,28 +52,63 @@ class ApiInterceptor extends Interceptor {
     final apiError = handleDioError(err);
 
     if (apiError.statusCode == 401) {
-      // نجرب نجدد التوكن أولاً
+      final requestOptions = err.requestOptions;
+
+      // 🟡 لو فيه refresh شغال بالفعل
+      if (_isRefreshing) {
+        return Future(() {
+          _queue.add((token) async {
+            try {
+              requestOptions.headers['Authorization'] = 'Bearer $token';
+              final response = await dio.fetch(requestOptions);
+              handler.resolve(response);
+            } catch (e) {
+              handler.reject(e as DioException);
+            }
+          });
+        });
+      }
+
+      // 🟢 ابدأ refresh
+      _isRefreshing = true;
+
       final refreshed = await refreshToken();
 
+      _isRefreshing = false;
+
       if (refreshed) {
-        // إعادة تنفيذ الـ request الأصلي مع التوكن الجديد
-        final options = err.requestOptions;
-        final newToken = await getAccessToken() ?? CacheHelper.getData("token");
-        if (newToken != null) {
-          options.headers['Authorization'] = 'Bearer $newToken';
+        final newToken =
+            await getAccessToken() ?? CacheHelper.getData("token");
+
+        if (newToken == null) {
+          await onLogout();
+          return handler.reject(err);
         }
 
-        final cloneReq = await dio.fetch(options);
-        return handler.resolve(cloneReq);
+        // 🔁 نفذ كل الطلبات اللي كانت مستنية
+        for (var retryRequest in _queue) {
+          retryRequest(newToken);
+        }
+        _queue.clear();
+
+        try {
+          // 🔁 إعادة تنفيذ الطلب الحالي
+          requestOptions.headers['Authorization'] = 'Bearer $newToken';
+          final response = await dio.fetch(requestOptions);
+          return handler.resolve(response);
+        } catch (e) {
+          return handler.reject(e as DioException);
+        }
       } else {
-        // لو ما نجحش التجديد، نعمل logout
+        // ❌ refresh token انتهى → logout
+        _queue.clear();
         await onLogout();
+        return handler.reject(err);
       }
     }
 
-    super.onError(err, handler);
+    return handler.next(err);
   }
-
   Future<bool> refreshToken() async {
     try {
       final refreshToken = await CacheHelper.getData("refToken");

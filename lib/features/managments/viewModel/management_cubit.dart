@@ -5,10 +5,13 @@ import 'package:meta/meta.dart';
 import '../../Committees/Model/UsersSigntureRequestModel.dart';
 import '../Models/CreateBoardMemberRequestlModel.dart';
 import '../Models/CreateBoardRequestModel.dart';
+import '../Models/CreateShareHolderRequest.dart';
 import '../Models/DiewctorModel.dart';
+import '../Models/GetShareHolderDetailModel.dart';
 import '../Models/MemberModel.dart';
 import '../Models/ShareHolderResponse.dart';
 import '../Models/editMemberOfBoardRequestModel.dart';
+import '../Models/editShareModel.dart';
 import '../Models/endMemberMemberShipModel.dart';
 import '../Models/memberOfBoardResponseModel.dart';
 
@@ -172,6 +175,50 @@ class ManagementCubit extends Cubit<ManagementState> {
       emit(SendSignatureSuccess());
     } catch (e) {
       emit(SendSignatureFailure(e.toString()));
+    }
+  }
+
+  /// ================= CREATE =================
+  Future<void> createShareHolder(
+    String companyId,
+    CreateShareHolderRequestModel model,
+  ) async {
+    emit(CreateShareHolderLoading());
+
+    try {
+      await repository.createShareHolder(companyId, model);
+      emit(CreateShareHolderSuccess());
+    } catch (e) {
+      emit(CreateShareHolderError(e.toString()));
+    }
+  }
+
+  /// ================= EDIT =================
+  Future<void> editShareHolder(
+    String companyId,
+    int profileId,
+    EditShareHolderRequestModel model,
+  ) async {
+    emit(EditShareHolderLoading());
+
+    try {
+      await repository.editShareHolderByProfileId(companyId, profileId, model);
+      emit(EditShareHolderSuccess());
+    } catch (e) {
+      emit(EditShareHolderError(e.toString()));
+    }
+  }
+
+  /// ================= GET BY ID =================
+  Future<void> getShareHolderById(String companyId, int profileId) async {
+    emit(GetShareHolderLoading());
+
+    try {
+      final data = await repository.getShareHolderById(companyId, profileId);
+
+      emit(GetShareHolderSuccess(data));
+    } catch (e) {
+      emit(GetShareHolderError(e.toString()));
     }
   }
 }

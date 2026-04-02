@@ -1,4 +1,6 @@
+import 'package:alhamd/features/managments/Models/MemberModel.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/constants/app_colors.dart';
@@ -6,8 +8,11 @@ import '../../../../core/network/cache_helper.dart';
 import '../../../../core/widgets/ActionIconButton.dart';
 import '../../../../core/widgets/chatDialog.dart';
 import '../../../../core/widgets/deleteDialog.dart';
+import '../../Models/editMemberOfBoardRequestModel.dart';
 import '../../viewModel/management_cubit.dart';
 import 'AddMemberDialog.dart';
+import 'EditMemberDialog.dart';
+import 'MemberDetails.dart';
 
 class BoardMembersPage extends StatefulWidget {
   final String boardId;
@@ -18,6 +23,7 @@ class BoardMembersPage extends StatefulWidget {
     required this.boardId,
     required this.cubit,
   });
+
   @override
   State<BoardMembersPage> createState() => _BoardMembersPageState();
 }
@@ -31,13 +37,14 @@ class _BoardMembersPageState extends State<BoardMembersPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _membershipTypeController =
-      TextEditingController();
+  TextEditingController();
   final TextEditingController _jobTitleController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
 
   // مثال: قائمة الأعضاء
   final List<Map<String, String>> members = [];
+
   @override
   void initState() {
     super.initState();
@@ -77,7 +84,11 @@ class _BoardMembersPageState extends State<BoardMembersPage> {
               onPressed: () {
                 showDialog(
                   context: context,
-                  builder: (_) => const AddMemberDialog(),
+                  builder: (_) => AddMemberDialog(
+                    companyId: CacheHelper.getData("companyId"),
+                    boardId: int.parse(widget.boardId),
+                    cubit: widget.cubit,
+                  ),
                 );
                 setState(() {
                   showAddMemberForm = !showAddMemberForm;
@@ -111,6 +122,80 @@ class _BoardMembersPageState extends State<BoardMembersPage> {
                       ),
                     );
                   }
+                  if (state is CreateMemberLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (state is DeleteMemberProfileSuccess) {
+                    SchedulerBinding.instance.addPostFrameCallback((_) {
+                      if (context.mounted) {
+                        Navigator.pop(context); // ✅ يقفل الديالوج
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              "تم حذف العضو بنجاح",
+                            ), // ✨ عدلت الرسالة
+                            backgroundColor: AppColors.primaryOlive,
+                          ),
+                        );
+
+                        context.read<ManagementCubit>().getMembers(
+                          CacheHelper.getData("companyId"),
+                          widget.boardId,
+                        );
+                      }
+                    });
+                  }
+                  if (state is DeleteMemberProfileFailure) {
+                    SchedulerBinding.instance.addPostFrameCallback((_) {
+                      if (context.mounted) {
+                        Navigator.pop(context); // ✅ يقفل الديالوج
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(state.error),
+                            backgroundColor: AppColors.primaryOlive,
+                          ),
+                        );
+                        context.read<ManagementCubit>().getMembers(
+                          CacheHelper.getData("companyId"),
+                          widget.boardId,
+                        );
+                      }
+                    });
+                  }
+                  if (state is CreateMemberFailure) {
+                    SchedulerBinding.instance.addPostFrameCallback((_) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(state.error),
+                            backgroundColor: AppColors.primaryOlive,
+                          ),
+                        );
+                        context.read<ManagementCubit>().getMembers(
+                          CacheHelper.getData("companyId"),
+                          widget.boardId,
+                        );
+                      }
+                    });
+                  }
+                  if (state is CreateMemberSuccess) {
+                    SchedulerBinding.instance.addPostFrameCallback((_) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("تم إرسال طلب إضافة العضو بنجاح"),
+                            backgroundColor: AppColors.primaryOlive,
+                          ),
+                        );
+                        context.read<ManagementCubit>().getMembers(
+                          CacheHelper.getData("companyId"),
+                          widget.boardId,
+                        );
+                      }
+                    });
+                  }
 
                   if (state is MembersSuccess) {
                     final members = state.data.items;
@@ -136,7 +221,7 @@ class _BoardMembersPageState extends State<BoardMembersPage> {
                           "jobTitle": member.jobTitle ?? "",
                           "phone": member.phone ?? "",
                           "email": member.email ?? "",
-                        });
+                        }, member);
                       },
                     );
                   }
@@ -151,7 +236,14 @@ class _BoardMembersPageState extends State<BoardMembersPage> {
     );
   }
 
-  Widget _buildMemberCard(Map<String, String> member) {
+  final Map<String, String> jobTitles = {
+    'مدير': '0',
+    'مهندس': '1',
+    'محلل': '2',
+    'مطور': '3',
+  };
+
+  Widget _buildMemberCard(Map<String, String> member, Item memberModel) {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 15),
@@ -181,16 +273,45 @@ class _BoardMembersPageState extends State<BoardMembersPage> {
           const SizedBox(height: 10),
 
           _buildActions(
-            () => ComplaintDetailsDialog.show(context),
-            () => showDialog(
+            onViewTap: () {
+              showMemberDetailsDialog(memberModel, context);
+            },
+            onEditTap: () {
+              // ✅ تحويل jobTitle من value للـ key عشان يتعرض في الـ dropdown
+              final initialTitle =
+                  jobTitles.entries
+                      .firstWhere(
+                        (e) => e.value == memberModel.jobTitle,
+                        orElse: () => const MapEntry('', ''),
+                      )
+                      .key
+                      .isEmpty
+                  ? null
+                  : jobTitles.entries
+                        .firstWhere((e) => e.value == memberModel.jobTitle)
+                        .key;
+
+              showDialog(
+                context: context,
+                builder: (_) => EditMemberJobDialog(
+                  initialJobTitle: initialTitle,
+                  initialMemberType: memberModel.membershipType,
+                ),
+              );
+            },
+            onDeleteTap: () => showDialog(
               context: context,
               builder: (_) => ConfirmDeleteDialog(
                 onConfirm: () {
-                  Navigator.pop(context);
+                  widget.cubit.deleteMemberOfBoardProfileId(
+                    CacheHelper.getData("companyId"),
+                    int.parse(widget.boardId),
+                    memberModel.profileId,
+                  );
                   // منطق الحذف هنا
                 },
               ),
-            ),
+                ),
           ),
         ],
       ),
@@ -226,60 +347,52 @@ class _BoardMembersPageState extends State<BoardMembersPage> {
     );
   }
 
-  Widget _buildActions(void Function() onEditTap, void Function() onDeleteTap) {
+  Widget _buildActions({
+    VoidCallback? onViewTap,
+    VoidCallback? onEditTap,
+    VoidCallback? onCancelTap,
+    VoidCallback? onSendTap,
+    VoidCallback? onDeleteTap,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: ActionIconButton(
-            onTap: onEditTap,
-            icon: Icons.remove_red_eye,
-            iconColor: AppColors.primaryOlive,
-            backgroundColor: Colors.white,
-            borderColor: AppColors.primaryOlive,
-          ),
+        ActionIconButton(
+          onTap: onViewTap,
+          icon: Icons.remove_red_eye,
+          iconColor: AppColors.primaryOlive,
+          backgroundColor: Colors.white,
+          borderColor: AppColors.primaryOlive,
         ),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: ActionIconButton(
-            onTap: onEditTap,
-            icon: Icons.edit,
-            iconColor: Colors.blue,
-            backgroundColor: Colors.white,
-            borderColor: Colors.blue,
-          ),
+        ActionIconButton(
+          onTap: onEditTap,
+          icon: Icons.edit,
+          iconColor: Colors.blue,
+          backgroundColor: Colors.white,
+          borderColor: Colors.blue,
         ),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: ActionIconButton(
-            onTap: onEditTap,
-            icon: Icons.delete,
-            iconColor: Colors.red,
-            backgroundColor: Colors.white,
-            borderColor: Colors.red,
-          ),
+        ActionIconButton(
+          onTap: onDeleteTap,
+          // ✅ كان onEditTap
+          icon: Icons.delete,
+          iconColor: Colors.red,
+          backgroundColor: Colors.white,
+          borderColor: Colors.red,
         ),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: ActionIconButton(
-            onTap: onEditTap,
-            icon: Icons.remove_circle_outline,
-            iconColor: Colors.red,
-            backgroundColor: Colors.white,
-            borderColor: Colors.red,
-          ),
+        ActionIconButton(
+          onTap: onCancelTap,
+          // ✅ كان onEditTap
+          icon: Icons.remove_circle_outline,
+          iconColor: Colors.red,
+          backgroundColor: Colors.white,
+          borderColor: Colors.red,
         ),
-
-        Align(
-          alignment: Alignment.centerLeft,
-          child: ActionIconButton(
-            onTap: onDeleteTap,
-            icon: Icons.request_page_outlined,
-            iconColor: Colors.deepOrange,
-            backgroundColor: Colors.white,
-            borderColor: Colors.deepOrange,
-          ),
+        ActionIconButton(
+          onTap: onSendTap,
+          icon: Icons.request_page_outlined,
+          iconColor: Colors.deepOrange,
+          backgroundColor: Colors.white,
+          borderColor: Colors.deepOrange,
         ),
       ],
     );
@@ -312,6 +425,7 @@ class _BoardMembersPageState extends State<BoardMembersPage> {
 
             Row(
               children: [
+
                 /// ✅ زرار الحفظ
                 Expanded(
                   child: ElevatedButton(

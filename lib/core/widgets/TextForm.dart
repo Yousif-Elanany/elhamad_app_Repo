@@ -29,6 +29,7 @@ Widget buildTextField({
         style: const TextStyle(fontSize: 12),
         decoration: InputDecoration(
           hintText: hint,
+
           hintStyle: TextStyle(color: Colors.grey[400], fontSize: 12),
           suffixIcon: suffixIcon,
           filled: true,

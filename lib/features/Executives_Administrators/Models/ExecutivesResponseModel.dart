@@ -80,7 +80,7 @@ class Item {
     email: json["email"],
     jobTitle: json["jobTitle"],
     isActive: json["isActive"],
-    signatureStatus: json["signatureStatus"],
+    signatureStatus: json["signatureStatus"] ?? "",
   );
 
   Map<String, dynamic> toJson() => {

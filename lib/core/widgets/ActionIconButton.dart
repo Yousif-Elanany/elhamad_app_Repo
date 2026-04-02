@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ActionIconButton extends StatelessWidget {
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final IconData icon;
   final Color iconColor;
   final Color backgroundColor;

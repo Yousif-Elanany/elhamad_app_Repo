@@ -46,7 +46,9 @@ final class ShareHoldersFailure extends ManagementState {
 
 // ─── Create Board Director ────────────────────────────
 class CreateBoardDirectorLoading extends ManagementState {}
+
 class CreateBoardDirectorSuccess extends ManagementState {}
+
 class CreateBoardDirectorFailure extends ManagementState {
   final String error;
   CreateBoardDirectorFailure(this.error);
@@ -54,7 +56,9 @@ class CreateBoardDirectorFailure extends ManagementState {
 
 // ─── Create Member ────────────────────────────────────
 class CreateMemberLoading extends ManagementState {}
+
 class CreateMemberSuccess extends ManagementState {}
+
 class CreateMemberFailure extends ManagementState {
   final String error;
   CreateMemberFailure(this.error);
@@ -62,10 +66,12 @@ class CreateMemberFailure extends ManagementState {
 
 // ─── Get Member Profile ───────────────────────────────
 class GetMemberProfileLoading extends ManagementState {}
+
 class GetMemberProfileSuccess extends ManagementState {
   final MemberOfBoardResponseModel data;
   GetMemberProfileSuccess(this.data);
 }
+
 class GetMemberProfileFailure extends ManagementState {
   final String error;
   GetMemberProfileFailure(this.error);
@@ -73,7 +79,9 @@ class GetMemberProfileFailure extends ManagementState {
 
 // ─── Edit Member Profile ──────────────────────────────
 class EditMemberProfileLoading extends ManagementState {}
+
 class EditMemberProfileSuccess extends ManagementState {}
+
 class EditMemberProfileFailure extends ManagementState {
   final String error;
   EditMemberProfileFailure(this.error);
@@ -81,7 +89,9 @@ class EditMemberProfileFailure extends ManagementState {
 
 // ─── Delete Member Profile ────────────────────────────
 class DeleteMemberProfileLoading extends ManagementState {}
+
 class DeleteMemberProfileSuccess extends ManagementState {}
+
 class DeleteMemberProfileFailure extends ManagementState {
   final String error;
   DeleteMemberProfileFailure(this.error);
@@ -89,7 +99,9 @@ class DeleteMemberProfileFailure extends ManagementState {
 
 // ─── End Member Membership ────────────────────────────
 class EndMemberShipLoading extends ManagementState {}
+
 class EndMemberShipSuccess extends ManagementState {}
+
 class EndMemberShipFailure extends ManagementState {
   final String error;
   EndMemberShipFailure(this.error);
@@ -97,9 +109,48 @@ class EndMemberShipFailure extends ManagementState {
 
 // ─── Send Signature ───────────────────────────────────
 class SendSignatureLoading extends ManagementState {}
+
 class SendSignatureSuccess extends ManagementState {}
+
 class SendSignatureFailure extends ManagementState {
   final String error;
 
   SendSignatureFailure(this.error);
+}
+
+/// ================= CREATE =================
+class CreateShareHolderLoading extends ManagementState {}
+
+class CreateShareHolderSuccess extends ManagementState {}
+
+class CreateShareHolderError extends ManagementState {
+  final String message;
+
+  CreateShareHolderError(this.message);
+}
+
+/// ================= EDIT =================
+class EditShareHolderLoading extends ManagementState {}
+
+class EditShareHolderSuccess extends ManagementState {}
+
+class EditShareHolderError extends ManagementState {
+  final String message;
+
+  EditShareHolderError(this.message);
+}
+
+/// ================= GET BY ID =================
+class GetShareHolderLoading extends ManagementState {}
+
+class GetShareHolderSuccess extends ManagementState {
+  final ShareHolderByProfileIdResponseModel data;
+
+  GetShareHolderSuccess(this.data);
+}
+
+class GetShareHolderError extends ManagementState {
+  final String message;
+
+  GetShareHolderError(this.message);
 }

@@ -111,7 +111,7 @@ class ManagementWidget extends StatelessWidget {
   }
 
   Widget statusWidget(String status) {
-    bool isActive = status == "1";
+    bool isActive = status == "true";
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(

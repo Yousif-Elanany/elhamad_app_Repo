@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:hijri/hijri_calendar.dart';
 
+import '../../../../core/network/cache_helper.dart';
 import '../../../../core/widgets/TextForm.dart';
 import '../../../../localization_service.dart';
+import '../../Models/createExecutiveRequestModel.dart';
+import '../../viewModel/executives_cubit.dart';
 
 class AddContributorDialog extends StatefulWidget {
   const AddContributorDialog({super.key});
@@ -21,19 +25,24 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
   final _nameArController = TextEditingController();
   final _nameEnController = TextEditingController();
   final _idController = TextEditingController();
-  String? _selectedNationality;
-  String? _selectedResidence;
+  DropdownItem? _selectedNationality;
+  DropdownItem? _selectedResidence;
   final _birthdateController = TextEditingController();
+  DateTime? _selectedBirthDate;
 
   // Membership
-  String? _selectedJobTitle;
-  String? _selectedJobRole;
+
+  DropdownItem? _selectedJobTitle;
+  DropdownItem? _selectedJobRole;
 
   // Contact
   final _phoneController = TextEditingController();
+  final _addressController = TextEditingController();
+
   final _emailController = TextEditingController();
   PlatformFile? _profilePhoto;
   PlatformFile? _authPhoto;
+
   // Status
   bool _isActive = true;
   bool _canViewPrivate = false;
@@ -47,7 +56,7 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
   static const _borderColor = Color(0xFFDDE5DD);
   static const _labelColor = Color(0xFF444444);
 
-  Future<void> _selectHijriDate() async {
+  Future<void> _selectDate() async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -56,18 +65,14 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
     );
 
     if (picked != null) {
-      final hijri = HijriCalendar.fromDate(picked);
+      _selectedBirthDate = picked;
 
-      const hijriMonths = [
-        'محرم', 'صفر', 'ربيع الأول', 'ربيع الثاني',
-        'جمادى الأولى', 'جمادى الآخرة', 'رجب', 'شعبان',
-        'رمضان', 'شوال', 'ذو القعدة', 'ذو الحجة',
-      ];
-
-      final monthName = hijriMonths[hijri.hMonth - 1];
-
-      _birthdateController.text =
-      "${hijri.hDay.toString().padLeft(2, '0')} $monthName ${hijri.hYear}";
+      setState(() {
+        _birthdateController.text =
+            "${picked.day.toString().padLeft(2, '0')}/"
+            "${picked.month.toString().padLeft(2, '0')}/"
+            "${picked.year}";
+      });
     }
   }
 
@@ -137,12 +142,25 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
                           'بيانات العضوية:',
                           _buildMembershipSection(),
                         ),
+
+                        const SizedBox(height: 24),
+
+                        _buildDropdown(
+                          label: 'الجنسية',
+                          hint: 'اختر',
+                          value: _selectedNationality,
+                          items: nationalities,
+                          onChanged: (v) =>
+                              setState(() => _selectedNationality = v),
+                        ),
                         const SizedBox(height: 24),
                         _buildSection(
                           'بيانات التواصل:',
                           _buildContactSection(),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 12),
+
+                        // const SizedBox(height: 24),
                         _buildStatusSection(),
                       ],
                     ),
@@ -161,7 +179,7 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.fromLTRB(28, 20, 20, 16),
-      decoration:  BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: Color(0xFFEEEEEE))),
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -215,6 +233,47 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
     );
   }
 
+  String? validateArabicName(String? v) {
+    if (v == null || v.trim().isEmpty) {
+      return 'هذا الحقل مطلوب';
+    }
+
+    final arabicRegex = RegExp(r'^[\u0600-\u06FF\s]+$');
+
+    if (!arabicRegex.hasMatch(v.trim())) {
+      return 'يجب إدخال حروف عربية فقط';
+    }
+
+    return null;
+  }
+
+  String? validateEnglishName(String? v) {
+    if (v == null || v.trim().isEmpty) {
+      return 'هذا الحقل مطلوب';
+    }
+
+    final englishRegex = RegExp(r'^[a-zA-Z\s]+$');
+
+    if (!englishRegex.hasMatch(v.trim())) {
+      return 'English letters only';
+    }
+
+    return null;
+  }
+
+  final List<DropdownItem> residences = [
+    DropdownItem(label: 'الرياض', value: 'RIYADH'),
+    DropdownItem(label: 'جدة', value: 'JEDDAH'),
+    DropdownItem(label: 'مكة المكرمة', value: 'MAKKAH'),
+    DropdownItem(label: 'المدينة المنورة', value: 'MADINAH'),
+    DropdownItem(label: 'الدمام', value: 'DAMMAM'),
+  ];
+  final List<DropdownItem> nationalities = [
+    DropdownItem(label: 'سعودي', value: 'SAUDI'),
+    DropdownItem(label: 'مقيم', value: 'RESIDENT'),
+    DropdownItem(label: 'أخرى', value: 'OTHER'),
+  ];
+
   // ── Personal Section ─────────────────────────
   Widget _buildPersonalSection() {
     return Column(
@@ -227,8 +286,8 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
                 label: 'الاسم (باللغة العربية)',
                 hint: 'أدخل الاسم بالعربية',
                 required: true,
-                validator: (v) =>
-                    (v == null || v.isEmpty) ? 'هذا الحقل مطلوب' : null,
+
+                validator: validateArabicName,
               ),
             ),
             const SizedBox(width: 16),
@@ -238,8 +297,7 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
                 label: 'الاسم (باللغة الإنجليزية)',
                 hint: 'أدخل الاسم بالإنجليزية',
                 required: true,
-                validator: (v) =>
-                    (v == null || v.isEmpty) ? 'هذا الحقل مطلوب' : null,
+                validator: validateEnglishName,
               ),
             ),
           ],
@@ -259,49 +317,12 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: _buildDropdown(
-                label: 'الجنسية',
-                hint: 'اختر',
-                value: _selectedNationality,
-                items: ['سعودي', 'مقيم', 'أخرى'],
-                onChanged: (v) => setState(() => _selectedNationality = v),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _buildDropdown(
-                label: 'محل الإقامة',
-                hint: 'اختر',
-                value: _selectedResidence,
-                items: [
-                  'الرياض',
-                  'جدة',
-                  'مكة المكرمة',
-                  'المدينة المنورة',
-                  'الدمام',
-                ],
-                onChanged: (v) => setState(() => _selectedResidence = v),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
               child: buildTextField(
-                controller: _birthdateController,
-                label: 'تاريخ الميلاد (بالتقويم الهجري)',
-                hint: 'اختر التاريخ الهجري',
+                controller: _emailController,
+                label: 'البريد الإلكتروني',
+                hint: 'أدخل البريد الإلكتروني',
                 required: true,
-
-                readOnly: true,
-                onTap: _selectHijriDate,
-                suffixIcon: const Icon(
-                  Icons.calendar_today_outlined,
-                  size: 12,
-                  color: Colors.grey,
-                ),
+                keyboardType: TextInputType.emailAddress,
                 validator: (v) =>
                     (v == null || v.isEmpty) ? 'هذا الحقل مطلوب' : null,
               ),
@@ -311,40 +332,52 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
         const SizedBox(height: 16),
         Row(
           children: [
+            // Expanded(
+            //   child: _buildDropdown(
+            //     label: 'محل الإقامة',
+            //     hint: 'اختر',
+            //     value: _selectedResidence,
+            //     items: residences,
+            //     onChanged: (v) => setState(() => _selectedResidence = v),
+            //   ),
+            // ),
+            //  const SizedBox(width: 16),
             Expanded(
-              child: _buildUploadArea(
-                label: 'صورة شخصية',
-                fileName: _profilePhoto?.name ?? 'اضغط للرفع',
-                onTap: () async {
-                  final file = await _pickFile();
-                  if (file != null) {
-                    setState(() {
-                      _profilePhoto = file;
-                    });
-                  }
-                },
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _buildUploadArea(
-                label: 'صورة التفويض',
-                fileName: _authPhoto?.name ?? 'اضغط للرفع',
-                onTap: () async {
-                  final file = await _pickFile();
-                  if (file != null) {
-                    setState(() {
-                      _authPhoto = file;
-                    });
-                  }
-                },
+              child: GestureDetector(
+                onTap: _selectDate,
+                child: AbsorbPointer(
+                  child: buildTextField(
+                    controller: _birthdateController,
+                    label: 'تاريخ الميلاد',
+                    hint: 'اختر تاريخ الميلاد',
+                    required: true,
+                    validator: (v) =>
+                        (v == null || v.isEmpty) ? 'هذا الحقل مطلوب' : null,
+                  ),
+                ),
               ),
             ),
           ],
         ),
+        const SizedBox(height: 16),
       ],
     );
   }
+
+  final List<DropdownItem> jobTitles = [
+    DropdownItem(label: 'مدير', value: 'Manager'),
+    DropdownItem(label: 'الرئيس التنفيذي', value: 'Ceo'),
+    DropdownItem(label: 'أمين سر المجلس', value: 'BOARD_SECRETARY'),
+    DropdownItem(label: 'سكرتير الجمعية', value: 'GENERAL_ASSEMBLY_SECRETARY'),
+    DropdownItem(label: 'جامع الأصوات', value: 'VOTE_COLLECTOR'),
+    DropdownItem(label: 'المستشار القانوني', value: 'LEGAL_ADVISOR'),
+  ];
+
+  final List<DropdownItem> jobRoles = [
+    DropdownItem(label: 'رئيس', value: 'CHAIRMAN'),
+    DropdownItem(label: 'نائب', value: 'VICE'),
+    DropdownItem(label: 'عضو', value: 'MEMBER'),
+  ];
 
   // ── Membership Section ───────────────────────
   Widget _buildMembershipSection() {
@@ -355,20 +388,20 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
             label: 'المسمى الوظيفي',
             hint: 'اختر',
             value: _selectedJobTitle,
-            items: ['مدير عام', 'نائب الرئيس', 'عضو مجلس إدارة'],
+            items: jobTitles,
             onChanged: (v) => setState(() => _selectedJobTitle = v),
           ),
         ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildDropdown(
-            label: 'اسم الدور الوظيفي',
-            hint: 'اختر',
-            value: _selectedJobRole,
-            items: ['رئيس', 'نائب', 'عضو'],
-            onChanged: (v) => setState(() => _selectedJobRole = v),
-          ),
-        ),
+        // SizedBox(width: 16,),
+        //         Expanded(
+        //           child: _buildDropdown(
+        //             label: 'اسم الدور الوظيفي',
+        //             hint: 'اختر',
+        //             value: _selectedJobRole,
+        //             items: jobRoles,
+        //             onChanged: (v) => setState(() => _selectedJobRole = v),
+        //           ),
+        //         ),
       ],
     );
   }
@@ -391,13 +424,15 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
         const SizedBox(width: 16),
         Expanded(
           child: buildTextField(
-            controller: _emailController,
-            label: 'البريد الإلكتروني',
-            hint: 'أدخل البريد الإلكتروني',
-            required: true,
-            keyboardType: TextInputType.emailAddress,
-            validator: (v) =>
-                (v == null || v.isEmpty) ? 'هذا الحقل مطلوب' : null,
+            controller: _addressController,
+            label: 'العنوان',
+            hint: 'أدخل العنوان',
+            required: false,
+            keyboardType: TextInputType.streetAddress,
+            validator: (v) {
+              // مش مطلوب → مفيش validation إلا لو حابب تضيف شرط
+              return null;
+            },
           ),
         ),
       ],
@@ -408,14 +443,13 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
   Widget _buildStatusSection() {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      //mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         // Active Toggle
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             buildLabel('النشاط', required: true),
-            const SizedBox(height: 8),
             Row(
               children: [
                 Switch(
@@ -436,24 +470,24 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
             ),
           ],
         ),
-        const SizedBox(width: 16),
-        // Can View Private
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              buildLabel('يمكنه رؤية الملفات الخاصة؟', required: true),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(child: _buildRadioOption('لا', false)),
-                  const SizedBox(width: 12),
-                  Expanded(child: _buildRadioOption('نعم', true)),
-                ],
-              ),
-            ],
-          ),
-        ),
+        // const SizedBox(width: 16),
+        // // Can View Private
+        // Expanded(
+        //   child: Column(
+        //     crossAxisAlignment: CrossAxisAlignment.start,
+        //     children: [
+        //       buildLabel('يمكنه رؤية الملفات الخاصة؟', required: true),
+        //       const SizedBox(height: 8),
+        //       Row(
+        //         children: [
+        //           Expanded(child: _buildRadioOption('لا', false)),
+        //           const SizedBox(width: 12),
+        //           Expanded(child: _buildRadioOption('نعم', true)),
+        //         ],
+        //       ),
+        //     ],
+        //   ),
+        // ),
       ],
     );
   }
@@ -566,57 +600,34 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
 
   // ── Reusable Widgets ─────────────────────────
 
-
-
-
   Widget _buildDropdown({
     required String label,
     required String hint,
-    required String? value,
-    required List<String> items,
-    required void Function(String?) onChanged,
+    required DropdownItem? value,
+    required List<DropdownItem> items,
+    required void Function(DropdownItem?) onChanged,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         buildLabel(label, required: true),
         const SizedBox(height: 6),
-        DropdownButtonFormField<String>(
+        DropdownButtonFormField<DropdownItem>(
           value: value,
           isExpanded: true,
+          validator: (v) => v == null ? 'هذا الحقل مطلوب' : null,
           decoration: InputDecoration(
             filled: true,
             fillColor: const Color(0xFFFAFAFA),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 11,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: _borderColor),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: _borderColor, width: 1.5),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: _green, width: 1.5),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
           ),
-          hint: Text(
-            hint,
-            style: TextStyle(color: Colors.grey[400], fontSize: 14),
-          ),
-          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.grey),
-          items: items
-              .map(
-                (e) => DropdownMenuItem(
-                  value: e,
-                  child: Text(e, style: const TextStyle(fontSize: 14)),
-                ),
-              )
-              .toList(),
+          hint: Text(hint),
+          items: items.map((e) {
+            return DropdownMenuItem(
+              value: e,
+              child: Text(e.label), // 👈 العربي
+            );
+          }).toList(),
           onChanged: onChanged,
         ),
       ],
@@ -637,8 +648,9 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
         GestureDetector(
           onTap: onTap,
           child: AnimatedContainer(
+            width: double.infinity,
             duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
             decoration: BoxDecoration(
               border: Border.all(
                 color: hasFile ? _green : const Color(0xFFB0C8B0),
@@ -656,33 +668,33 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
                 const SizedBox(height: 6),
                 hasFile
                     ? Text(
-                        fileName,
-                        style: const TextStyle(
-                          fontSize: 10,
-                          color: _green,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      )
+                  fileName,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: _green,
+                    fontWeight: FontWeight.w600,
+                  ),
+                )
                     : RichText(
-                        textAlign: TextAlign.center,
-                        text: TextSpan(
-                          style: const TextStyle(
-                            fontSize: 10,
-                            color: Color(0xFF666666),
-                            fontFamily: 'Cairo',
-                          ),
-                          children: [
-                            const TextSpan(
-                              text: 'اضغط للرفع ',
-                              style: TextStyle(
-                                color: _green,
-                                decoration: TextDecoration.underline,
-                              ),
-                            ),
-                            const TextSpan(text: 'أو قم بسحب وافلات للملف'),
-                          ],
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: Color(0xFF666666),
+                      fontFamily: 'Cairo',
+                    ),
+                    children: [
+                      const TextSpan(
+                        text: 'اضغط للرفع ',
+                        style: TextStyle(
+                          color: _green,
+                          decoration: TextDecoration.underline,
                         ),
                       ),
+                      const TextSpan(text: 'أو قم بسحب وافلات للملف'),
+                    ],
+                  ),
+                ),
                 const SizedBox(height: 4),
                 const Text(
                   'PDF,DOC,PNG أو JPG (2 MB)',
@@ -696,15 +708,46 @@ class _AddContributorDialogState extends State<AddContributorDialog> {
     );
   }
 
-  void _onSave() {
-    if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('تم الحفظ بنجاح!', textDirection: TextDirection.rtl),
-          backgroundColor: Color(0xFF3A6B3A),
-        ),
-      );
-      Navigator.pop(context);
-    }
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, textDirection: TextDirection.rtl),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
+
+  void _onSave() {
+    if (!_formKey.currentState!.validate()) return;
+
+    final request = CreateExecutiveRequestModel(
+      jobTitle: _selectedJobTitle?.value ?? '',
+      isActive: _isActive,
+      personalInfo: PersonalInfo(
+        name: _nameEnController.text.trim(),
+        nameAr: _nameArController.text.trim(),
+        phoneNumber: _phoneController.text.trim(),
+        nationalId: _idController.text.trim(),
+        email: _emailController.text.trim(),
+        dateOfBirth: _selectedBirthDate ?? DateTime.now(),
+        nationality: _selectedNationality?.value ?? '',
+        address: _selectedResidence?.value ?? '',
+
+        // دي مهمة جداً (هشرحها تحت)
+        profilePictureDocumentId: 1,
+      ),
+    );
+    print(request.jobTitle);
+    context.read<ExecutivesCubit>().createExecutives(
+      CacheHelper.getData("companyId"),
+      request,
+    );
+  }
+}
+
+class DropdownItem {
+  final String label; // اللي يظهر
+  final String value; // اللي يتبعت
+
+  DropdownItem({required this.label, required this.value});
 }

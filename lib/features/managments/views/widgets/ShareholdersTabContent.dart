@@ -7,6 +7,7 @@ import '../../../../core/widgets/ActionIconButton.dart';
 import '../../../../core/widgets/chatDialog.dart';
 import '../../viewModel/management_cubit.dart';
 import 'AddShareholderDialog.dart';
+import 'EditShareHolder.dart';
 
 class ShareholdersTabContent extends StatefulWidget {
   final ManagementCubit cubit;
@@ -22,7 +23,7 @@ class _ShareholdersTabContentState extends State<ShareholdersTabContent> {
   @override
   void initState() {
     super.initState();
-      widget.cubit.getShareHolders(CacheHelper.getData("companyId"));
+    widget.cubit.getShareHolders(CacheHelper.getData("companyId"));
   }
 
   @override
@@ -43,21 +44,39 @@ class _ShareholdersTabContentState extends State<ShareholdersTabContent> {
                 alignment: WrapAlignment.start,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  // زر إضافة مساهم
                   ElevatedButton.icon(
                     onPressed: () {
-                      showDialog(context: context,
-                          builder: (context) =>
-                              AddShareholderDialog(),);
+                      // showDialog(
+                      //   context: context,
+                      //   builder: (dialogContext) => BlocProvider.value(
+                      //     value: context.read<ManagementCubit>(),
+                      //     child: AddShareholderDialog(
+                      //       companyId: CacheHelper.getData("companyId"),
+                      //     ),
+                      //   ),
+                      // );
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (context) => const EditShareholderSheet(),
+                      );
                     },
                     icon: const Icon(Icons.add, color: Colors.white),
-                    label: const Text("إضافة مساهم", style: TextStyle(color: Colors.white)),
+                    label: const Text(
+                      "إضافة مساهم",
+                      style: TextStyle(color: Colors.white),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryGreen,
-                      minimumSize: const Size(double.infinity, 45), // ياخد عرض العمود كله
-
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      minimumSize: const Size(double.infinity, 45),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   ),
 
@@ -94,7 +113,6 @@ class _ShareholdersTabContentState extends State<ShareholdersTabContent> {
               Expanded(
                 child: BlocBuilder<ManagementCubit, ManagementState>(
                   builder: (context, state) {
-
                     if (state is ShareHoldersLoading) {
                       return const Center(child: CircularProgressIndicator());
                     }
@@ -109,7 +127,6 @@ class _ShareholdersTabContentState extends State<ShareholdersTabContent> {
                     }
 
                     if (state is ShareHoldersSuccess) {
-
                       final shareholders = state.data.items; // حسب الموديل
 
                       if (shareholders.isEmpty) {
@@ -124,7 +141,6 @@ class _ShareholdersTabContentState extends State<ShareholdersTabContent> {
                       return ListView.builder(
                         itemCount: shareholders.length,
                         itemBuilder: (context, index) {
-
                           final shareholder = shareholders[index];
 
                           return Padding(
@@ -149,22 +165,23 @@ class _ShareholdersTabContentState extends State<ShareholdersTabContent> {
               ),
 
               const SizedBox(height: 10),
-            //  _buildPagination(),
+              //  _buildPagination(),
             ],
           ),
         ),
       ),
     );
   }
+
   Widget _buildShareholderCard(
-      String id,
-      String number,
-      String name,
-      String type,
-      String shares,
-      String percent,
-      String shareType,
-      ) {
+    String id,
+    String number,
+    String name,
+    String type,
+    String shares,
+    String percent,
+    String shareType,
+  ) {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -177,7 +194,6 @@ class _ShareholdersTabContentState extends State<ShareholdersTabContent> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           _buildRow("#", id),
           _buildRow("رقم المساهم", number),
           _buildRow("اسم المساهم", name),
@@ -190,7 +206,7 @@ class _ShareholdersTabContentState extends State<ShareholdersTabContent> {
 
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children:  [
+            children: [
               Align(
                 alignment: Alignment.centerLeft,
                 child: ActionIconButton(
@@ -200,7 +216,8 @@ class _ShareholdersTabContentState extends State<ShareholdersTabContent> {
                   backgroundColor: AppColors.primaryOlive.withOpacity(.1),
                   borderColor: AppColors.primaryOlive,
                 ),
-              ),              SizedBox(width: 12),
+              ),
+              SizedBox(width: 12),
               Align(
                 alignment: Alignment.centerLeft,
                 child: ActionIconButton(
@@ -210,12 +227,14 @@ class _ShareholdersTabContentState extends State<ShareholdersTabContent> {
                   backgroundColor: AppColors.white,
                   borderColor: Colors.lightBlue,
                 ),
-              ),            ],
-          )
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
+
   Widget _buildRow(String title, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -230,27 +249,54 @@ class _ShareholdersTabContentState extends State<ShareholdersTabContent> {
       ),
     );
   }
+
   // الدوال المساعدة تبقى كما هي في الكود السابق...
-  DataRow _buildDataRow(String id, String num, String name, String type, String count, String ratio, String stockType) {
-    return DataRow(cells: [
-      DataCell(Text(id)), DataCell(Text(num)), DataCell(Text(name)),
-      DataCell(Text(type)), DataCell(Text(count)), DataCell(Text(ratio)),
-      DataCell(Text(stockType)),
-      DataCell(Row(
-        children: [
-          IconButton(icon: const Icon(Icons.edit_note, color: Colors.blue), onPressed: () {}),
-          IconButton(icon: const Icon(Icons.visibility_outlined, color: Colors.grey), onPressed: () {}),
-        ],
-      )),
-    ]);
+  DataRow _buildDataRow(
+    String id,
+    String num,
+    String name,
+    String type,
+    String count,
+    String ratio,
+    String stockType,
+  ) {
+    return DataRow(
+      cells: [
+        DataCell(Text(id)),
+        DataCell(Text(num)),
+        DataCell(Text(name)),
+        DataCell(Text(type)),
+        DataCell(Text(count)),
+        DataCell(Text(ratio)),
+        DataCell(Text(stockType)),
+        DataCell(
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.edit_note, color: Colors.blue),
+                onPressed: () {},
+              ),
+              IconButton(
+                icon: const Icon(Icons.visibility_outlined, color: Colors.grey),
+                onPressed: () {},
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildPagination() {
-    return SingleChildScrollView( // أضفنا هذا لحماية الترقيم من الـ Overflow أيضاً
+    return SingleChildScrollView(
+      // أضفنا هذا لحماية الترقيم من الـ Overflow أيضاً
       scrollDirection: Axis.horizontal,
       child: Container(
         padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: lightGrey, borderRadius: BorderRadius.circular(8)),
+        decoration: BoxDecoration(
+          color: lightGrey,
+          borderRadius: BorderRadius.circular(8),
+        ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -262,9 +308,13 @@ class _ShareholdersTabContentState extends State<ShareholdersTabContent> {
             const SizedBox(width: 20),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              decoration: BoxDecoration(border: Border.all(color: Colors.grey[300]!)),
-              child: const Row(children: [Text("10"), Icon(Icons.arrow_drop_down)]),
-            )
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey[300]!),
+              ),
+              child: const Row(
+                children: [Text("10"), Icon(Icons.arrow_drop_down)],
+              ),
+            ),
           ],
         ),
       ),

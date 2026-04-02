@@ -2,11 +2,15 @@ import 'package:alhamd/localization_service.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/network/cache_helper.dart';
 import '../../../../core/widgets/ActionIconButton.dart';
 import '../../../../core/widgets/chatDialog.dart';
 import '../../../../core/widgets/deleteDialog.dart';
+import '../../../Committees/Model/UsersSigntureRequestModel.dart';
 import '../../../home/models/complainModel.dart';
 import '../../../policy/views/widgets/makePolicyRequestDialog.dart';
+import '../../Models/EditExecutiveModel.dart';
+import '../../viewModel/executives_cubit.dart';
 
 class adminCard extends StatefulWidget {
   final int index;
@@ -15,8 +19,10 @@ class adminCard extends StatefulWidget {
   final String phone;
   final String email;
   final String status;
+  final String signatureRequestId;
+  final ExecutivesCubit cubit;
   final String jobTitle;
-
+  final bool isActive;
 
   const adminCard({
     super.key,
@@ -24,6 +30,9 @@ class adminCard extends StatefulWidget {
     required this.name,
     required this.NationalID,
     required this.jobTitle,
+    required this.isActive,
+    required this.signatureRequestId,
+    required this.cubit,
 
     required this.phone,
     required this.email,
@@ -45,6 +54,8 @@ class _adminCardState extends State<adminCard> {
         return Colors.green;
       case "مرفوض":
         return Colors.red;
+      case "قيد الانتظار":
+        return Colors.grey;
       default:
         return Colors.grey;
     }
@@ -64,13 +75,13 @@ class _adminCardState extends State<adminCard> {
             ),
           ),
           Switch(
-            value: isActive,
+            value: widget.isActive,
             activeColor: AppColors.primaryOlive,
             onChanged: (val) {
-              print(val); // هل بيطبع؟
-              setState(() {
-                isActive = val;
-              });
+              // print(val); // هل بيطبع؟
+              // setState(() {
+              //   isActive = val;
+              // });
             },
           ),
         ],
@@ -111,7 +122,7 @@ class _adminCardState extends State<adminCard> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    widget.status,
+                    widget.status == "" ? "مجهول" : widget.status,
                     style: TextStyle(
                       color: _statusColor(),
                       fontWeight: FontWeight.bold,
@@ -124,21 +135,17 @@ class _adminCardState extends State<adminCard> {
             const SizedBox(height: 10),
 
             _buildRow("name".tr(), widget.name),
-            _buildRow("ID Number".tr(), widget.NationalID),
+            _buildRow("ID number".tr(), widget.NationalID),
             _buildRow("phone_Num".tr(), widget.phone),
             _buildRow("email".tr(), widget.email),
             _buildRow("email".tr(), widget.email),
             _buildRow("JobTitle".tr(), widget.jobTitle),
 
-            _buildSwitchRow(
-              "Activity".tr(),
-              isActive,
-                  (val) {
-                setState(() {
-                  isActive = val;
-                });
-              },
-            ),
+            _buildSwitchRow("Activity".tr(), widget.isActive, (val) {
+              // setState(() {
+              //  // isActive = val;
+              // });
+            }),
             const SizedBox(height: 12),
 
             /// الإجراءات
@@ -159,7 +166,7 @@ class _adminCardState extends State<adminCard> {
                   alignment: Alignment.centerLeft,
                   child: ActionIconButton(
                     onTap: () {},
-                     //   makePolicyRequestDialog.show(context,model: widget.model),
+                    //   makePolicyRequestDialog.show(context,model: widget.model),
                     icon: Icons.edit,
                     iconColor: Colors.blue,
                     backgroundColor: Colors.blue.withOpacity(.1),
@@ -173,7 +180,13 @@ class _adminCardState extends State<adminCard> {
                       context: context,
                       builder: (_) => ConfirmDeleteDialog(
                         onConfirm: () {
-                          Navigator.pop(context);
+                          widget.cubit.deleteExecutive(
+                            CacheHelper.getData(
+                              "companyId",
+                            ), // استبدل بالقيمة الحقيقية
+                            widget.index, // استبدل بالقيمة الحقيقية
+                          );
+
                           // منطق الحذف هنا
                         },
                       ),
@@ -182,6 +195,30 @@ class _adminCardState extends State<adminCard> {
                     iconColor: Colors.red,
                     backgroundColor: Colors.white,
                     borderColor: Colors.red,
+                  ),
+                ),
+
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: ActionIconButton(
+                    onTap: () {
+                      final model = UsersSigntureRequestModel(
+                          userIds: [
+                            widget.signatureRequestId,
+                            // استبدل بالقيمة الحقيقية
+                          ]
+                      );
+                      widget.cubit.sendSignatureRequest(
+                        CacheHelper.getData(
+                          "companyId",
+                        ), // استبدل بالقيمة الحقيقية
+                        model, // استبدل بالقيمة الحقيقية
+                      );
+                    },
+                    icon: Icons.request_quote_outlined,
+                    iconColor: Colors.deepOrange,
+                    backgroundColor: Colors.white,
+                    borderColor: Colors.deepOrange,
                   ),
                 ),
               ],
@@ -209,7 +246,6 @@ class _adminCardState extends State<adminCard> {
       ),
     );
   }
-
 
   void _showActionsDialog(BuildContext context) {
     showDialog(

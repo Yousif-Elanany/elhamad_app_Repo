@@ -1,9 +1,11 @@
 import 'package:alhamd/features/managments/Models/BoardDetailModel.dart';
 import 'package:alhamd/features/managments/views/widgets/addBoard.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/cache_helper.dart';
 
 import '../../viewModel/management_cubit.dart';
@@ -36,7 +38,10 @@ class _BoardTabContentState extends State<BoardTabContent> {
             onPressed: () {
               showDialog(
                 context: context,
-                builder: (context) => AddBoardDialog(),
+                builder: (context) => AddBoardDialog(
+                  companyId: CacheHelper.getData("companyId"),
+                  cubit: widget.cubit,
+                ),
               );
             },
             icon: const Icon(Icons.add, color: Colors.white),
@@ -72,6 +77,37 @@ class _BoardTabContentState extends State<BoardTabContent> {
                     ),
                   );
                 }
+                if (state is CreateBoardDirectorSuccess) {
+                  SchedulerBinding.instance.addPostFrameCallback((_) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text("تم إنشاء مجلس الإدارة بنجاح"),
+                          backgroundColor: AppColors.primaryOlive,
+                        ),
+                      );
+                      widget.cubit.getDirectors(
+                        CacheHelper.getData("companyId"),
+                      );
+                    }
+                  });
+                  widget.cubit.getDirectors(CacheHelper.getData("companyId"));
+                }
+                if (state is CreateBoardDirectorFailure) {
+                  SchedulerBinding.instance.addPostFrameCallback((_) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(state.error),
+                          backgroundColor: AppColors.primaryOlive,
+                        ),
+                      );
+                      widget.cubit.getDirectors(
+                        CacheHelper.getData("companyId"),
+                      );
+                    }
+                  });
+                }
 
                 if (state is DirectorsSuccess) {
                   final directors = state.data.items; // غيّر حسب موديلك
@@ -89,11 +125,12 @@ class _BoardTabContentState extends State<BoardTabContent> {
                     itemCount: directors.length,
                     itemBuilder: (context, index) {
                       final board = directors[index];
+                      print(board.isActive);
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: ManagementWidget(
-                          caseName:
-                              board.id.toString() ?? '', // غيّر حسب موديلك
+                          caseName: board.id.toString() ?? '',
+                          // غيّر حسب موديلك
                           startDate: DateFormat(
                             'yyyy/MM/dd',
                           ).format(board.startDate),
@@ -105,14 +142,9 @@ class _BoardTabContentState extends State<BoardTabContent> {
                               board.activeMembersCount?.toString() ?? '0',
                           availableSeats:
                               board.openPositionCount?.toString() ?? '0',
-                          status: board.isActive ? "نشط" : "غير نشط",
+                          status: board.isActive ? "true" : "false",
                           onViewTap: () {
-                            showBoardDetailsDialog(
-                              board,
-                              context,
-
-
-                            );
+                            showBoardDetailsDialog(board, context);
                           },
                           onGroupTap: () {
                             Navigator.push(

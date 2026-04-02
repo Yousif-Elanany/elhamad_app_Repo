@@ -1,8 +1,9 @@
-import 'package:alhamd/features/home/models/SubscriptionsModel.dart';
-import 'package:alhamd/features/managments/Models/DiewctorModel.dart';
-import 'package:alhamd/features/managments/Models/MemberModel.dart';
-import 'package:alhamd/features/managments/services/management_Remote_Data_Source.dart';
+import 'package:alhamd/features/Committees/Model/UsersSigntureRequestModel.dart';
+import 'package:alhamd/features/Executives_Administrators/Models/createExecutiveRequestModel.dart';
+import 'package:alhamd/features/Executives_Administrators/Models/getExecutiveByProfileIdResponseModel.dart';
 
+
+import '../Models/EditExecutiveModel.dart';
 import '../Models/ExecutivesResponseModel.dart';
 import '../Services/Executives_Remote_Data_Source.dart';
 
@@ -17,4 +18,37 @@ class ExecutivesRepository implements ExecutivesRemoteDataSource {
   }
 
 
+  @override
+  Future<void> deleteExecutiveByProfileId(String companyId,
+      int profileId,) {
+    return remote.deleteExecutiveByProfileId(
+      companyId,
+      profileId,
+    );
+  }
+
+  @override
+  Future<void> editExecutiveByProfileId(String companyId,
+      int profileId,
+      EditExecutiveModel requestModel,) {
+    return remote.editExecutiveByProfileId(companyId, profileId, requestModel);
+  }
+
+  @override
+  Future<GetExecutiveByProfileIdResponseModel> getExecutiveByProfileId(
+      String companyId,
+      int profileId,) {
+    return remote.getExecutiveByProfileId(companyId, profileId);
+  }
+
+  @override
+  Future<void> createExecutives(String companyId,
+      CreateExecutiveRequestModel requestModel) {
+    return remote.createExecutives(companyId, requestModel);
+  }
+
+  @override
+  sendSignatureRequest(String companyId, UsersSigntureRequestModel model) {
+    return remote.sendSignatureRequest(companyId, model);
+  }
 }
