@@ -1,3 +1,5 @@
+import 'package:alhamd/core/network/cache_helper.dart';
+import 'package:alhamd/features/policy/views/widgets/policyRequestDetail.dart';
 import 'package:alhamd/localization_service.dart';
 import 'package:flutter/material.dart';
 
@@ -6,6 +8,7 @@ import '../../../../core/widgets/ActionIconButton.dart';
 import '../../../../core/widgets/chatDialog.dart';
 import '../../../../core/widgets/deleteDialog.dart';
 import '../../../home/models/complainModel.dart';
+import '../../viewModel/policy_cubit.dart';
 import 'makePolicyRequestDialog.dart';
 
 class PolicyCard extends StatelessWidget {
@@ -18,6 +21,7 @@ class PolicyCard extends StatelessWidget {
   final String makeRequest;
   final String date;
   final ComplaintModel? model;
+  final PolicyCubit cubit;
 
   const PolicyCard({
     super.key,
@@ -26,10 +30,11 @@ class PolicyCard extends StatelessWidget {
     required this.address,
     required this.Status,
     required this.notes,
+    required this.cubit,
     required this.makeRequest,
     required this.date,
 
-     this.model,
+    this.model,
   });
 
   Color _statusColor() {
@@ -56,6 +61,7 @@ class PolicyCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+
             /// Header
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -80,7 +86,7 @@ class PolicyCard extends StatelessWidget {
                   child: Text(
                     Status,
                     style: TextStyle(
-                      color:Colors.black,
+                      color: Colors.black,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -92,7 +98,7 @@ class PolicyCard extends StatelessWidget {
 
             _buildRow("address".tr(), address),
             _buildRow("notes".tr(), notes),
-            _buildRow("مقدم الطلب",  makeRequest),
+            _buildRow("مقدم الطلب", makeRequest),
             _buildRow("اسم الشركة", companyName),
             _buildRow("تاريخ الإنشاء", date),
 
@@ -105,7 +111,15 @@ class PolicyCard extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: ActionIconButton(
-                    onTap: () => ComplaintDetailsDialog.show(context),
+                    onTap: () =>
+                        showDialog(
+                          context: context,
+                          builder: (_) =>
+                              PolicyRequestDetailsDialog(
+                                requestId: index,
+                                cubit: cubit,
+                              ),
+                        ),
                     icon: Icons.remove_red_eye_rounded,
                     iconColor: AppColors.primaryOlive,
                     backgroundColor: AppColors.primaryOlive.withOpacity(.1),
@@ -116,7 +130,9 @@ class PolicyCard extends StatelessWidget {
                   alignment: Alignment.centerLeft,
                   child: ActionIconButton(
                     onTap: () =>
-                        makePolicyRequestDialog.show(context,model: model),
+                        makePolicyRequestDialog.show(context, address: address,
+                            notes: notes,
+                            policyId: index),
                     icon: Icons.edit,
                     iconColor: Colors.blue,
                     backgroundColor: Colors.blue.withOpacity(.1),
@@ -130,8 +146,10 @@ class PolicyCard extends StatelessWidget {
                       context: context,
                       builder: (_) => ConfirmDeleteDialog(
                         onConfirm: () {
+                          cubit.deletePoliciesRequests(
+                              CacheHelper.getData("companyId"), index
+                          );
                           Navigator.pop(context);
-                          // منطق الحذف هنا
                         },
                       ),
                     ),

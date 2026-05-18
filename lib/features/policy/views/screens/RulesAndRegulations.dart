@@ -129,7 +129,52 @@ class _RulesAndRegulationsState extends State<RulesAndRegulations>
                 ),
               ),
               Expanded(
-                child: BlocBuilder<PolicyCubit, PolicyState>(
+                child: BlocConsumer<PolicyCubit, PolicyState>(
+                  listener: (context, state) {
+                    final companyId = CacheHelper.getData("companyId");
+
+                    if (state is CreatePolicyRequestSuccess) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("تم الإنشاء بنجاح")),
+                      );
+
+                      context.read<PolicyCubit>().fetchPoliciesRequests(
+                        companyId,
+                      );
+                    }
+
+                    if (state is EditPolicyRequestSuccess) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("تم التعديل بنجاح")),
+                      );
+
+                      context.read<PolicyCubit>().fetchPoliciesRequests(
+                        companyId,
+                      );
+                    }
+
+                    if (state is DeletePolicyRequestSuccess) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("تم الحذف بنجاح")),
+                      );
+
+                      context.read<PolicyCubit>().fetchPoliciesRequests(
+                        companyId,
+                      );
+                    }
+
+                    if (state is DeletePolicyRequestError) {
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text(state.message)));
+                    }
+
+                    if (state is CreatePolicyRequestError) {
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text(state.message)));
+                    }
+                  },
                   builder: (context, state) {
                     // Loading خاص بالـ requests بس
                     if (state is PolicyRequestsLoading) {
@@ -166,13 +211,15 @@ class _RulesAndRegulationsState extends State<RulesAndRegulations>
                             padding: const EdgeInsets.only(bottom: 12),
                             child: PolicyCard(
                               index: item.id,
+                              cubit: context.read<PolicyCubit>(),
                               companyName: item.companyName,
                               address: item.title,
                               Status: item.status,
                               notes: item.notes,
                               makeRequest: item.requestedByName,
-                              date: DateFormat('yyyy/MM/dd – hh:mm a')
-                                  .format(item.createdAt),
+                              date: DateFormat(
+                                'yyyy/MM/dd – hh:mm a',
+                              ).format(item.createdAt),
                             ),
                           );
                         },
@@ -250,8 +297,9 @@ class _RulesAndRegulationsState extends State<RulesAndRegulations>
                               index: item.id,
                               address: item.companyName,
                               bySomeOne: item.creatorName,
-                              creationDate: DateFormat('yyyy/MM/dd – hh:mm a')
-                                  .format(item.createdAt),
+                              creationDate: DateFormat(
+                                'yyyy/MM/dd – hh:mm a',
+                              ).format(item.createdAt),
                             ),
                           );
                         },

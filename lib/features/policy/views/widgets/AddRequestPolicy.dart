@@ -1,59 +1,40 @@
-import 'package:alhamd/core/network/cache_helper.dart';
 import 'package:alhamd/localization_service.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/network/handleErrors/ValidationClass.dart';
+import '../../../compaines/views/widgets/addComplain.dart';
 import '../../../home/models/complainModel.dart';
-import '../../Model/makeRequestPolicy.dart';
-import '../../viewModel/policy_cubit.dart';
 
-enum MessageType { complaint, inquiry }
 
-class makePolicyRequestDialog extends StatefulWidget {
-  final String address;
-  final String notes;
-  final int? policyId; // لو حتعدل طلب موجود، حتحتاج الـ ID
+class AddPolicyDialog extends StatefulWidget {
+  final ComplaintModel? model;
 
-  makePolicyRequestDialog({
-    super.key,
-    this.address = '',
-    this.notes = '',
-    this.policyId,
-  });
+  AddPolicyDialog({super.key, this.model});
 
   /// Helper to show the dialog
   static Future<Map<String, dynamic>?> show(BuildContext context, {
-    required String address,
-    required String notes,
-    required int? policyId,
+    ComplaintModel? model,
   }) {
     return showDialog<Map<String, dynamic>>(
       context: context,
       barrierDismissible: false,
-      builder: (_) =>
-          BlocProvider.value(
-            value: context.read<PolicyCubit>(),
-            child: makePolicyRequestDialog(
-              address: address,
-              notes: notes,
-              policyId: policyId,
-            ),
-          ),
+      builder: (_) => AddPolicyDialog(model: model),
     );
   }
 
   @override
-  State<makePolicyRequestDialog> createState() =>
-      _makePolicyRequestDialogState();
+  State<AddPolicyDialog> createState() =>
+      _AddPolicyDialogState();
 }
 
-class _makePolicyRequestDialogState extends State<makePolicyRequestDialog> {
-  MessageType? _selectedType;
+class _AddPolicyDialogState extends State<AddPolicyDialog> {
   final TextEditingController _messageController = TextEditingController();
   final TextEditingController _notesontroller = TextEditingController();
 
+  bool get isAr => LocalizationService.getLang() == 'ar';
+
   final _formKey = GlobalKey<FormState>();
+  final Color primaryOlive = const Color(0xFF8B8B6B);
 
   // Theme colors matching the screenshot
   static const Color _primaryColor = Color(0xFF6B7C5C); // olive green
@@ -61,38 +42,33 @@ class _makePolicyRequestDialogState extends State<makePolicyRequestDialog> {
   static const Color _labelColor = Color(0xFF333333);
   static const Color _hintColor = Color(0xFFAAAAAA);
   static const Color _cancelBorderColor = Color(0xFF6B7C5C);
+  MessageType? _selectedType;
+  final TextEditingController nameController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    // Pre-fill fields if editing an existing request
-    _messageController.text = widget.address;
-    _notesontroller.text = widget.notes;
+    if (widget.model != null) {
+      // Pre-fill fields if editing an existing request
+      _messageController.text = widget.model!.content;
+      _notesontroller.text = widget.model!.content;
+
+      // You can also set _selectedType based on the model's type if needed
+    }
   }
 
   @override
   void dispose() {
     _messageController.dispose();
-    _notesontroller.dispose();
-
     super.dispose();
   }
 
   void _onSave() {
-    if (!_formKey.currentState!.validate()) return;
-
-    final cubit = context.read<PolicyCubit>();
-
-    final model = CreateModelRequestModel(
-      notes: _notesontroller.text,
-      title: _messageController.text,
-    );
-
-    cubit.editPoliciesRequestById(
-      CacheHelper.getData("companyId"),
-      model,
-      widget.policyId ?? 0,
-    );
+    if (_formKey.currentState!.validate()) {
+      Navigator.of(
+        context,
+      ).pop({'type': _selectedType, 'message': _messageController.text.trim()});
+    }
   }
 
   void _onCancel() {
@@ -120,7 +96,7 @@ class _makePolicyRequestDialogState extends State<makePolicyRequestDialog> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Policy_Request'.tr(),
+                      'add_policy'.tr(),
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -156,7 +132,7 @@ class _makePolicyRequestDialogState extends State<makePolicyRequestDialog> {
                     // ── Message Type ─────────────────────────
                     RichText(
                       text: TextSpan(
-                        text: 'address'.tr(),
+                        text: 'Policy Name'.tr(),
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -174,10 +150,11 @@ class _makePolicyRequestDialogState extends State<makePolicyRequestDialog> {
 
                     TextFormField(
                       controller: _messageController,
+                      maxLines: 1,
                       textAlign: TextAlign.right,
                       textDirection: TextDirection.rtl,
                       decoration: InputDecoration(
-                        hintText: 'ادخل العنوان',
+                        hintText: 'Policy Name'.tr(),
                         hintStyle: const TextStyle(
                           color: _hintColor,
                           fontSize: 14,
@@ -203,19 +180,15 @@ class _makePolicyRequestDialogState extends State<makePolicyRequestDialog> {
                       validator: (value) {
                         return SmartValidator.validate(
                           value,
-                          fieldName: 'العنوان',
+                          fieldName: 'Policy Name'.tr(),
                           required: true,
                         );
                       },
                     ),
-
-                    // Validation error for type
-                    const SizedBox(height: 20),
-
-                    // ── Message Text ─────────────────────────
+                    const SizedBox(height: 10),
                     RichText(
                       text: TextSpan(
-                        text: 'notes'.tr(),
+                        text: 'Policy Name'.tr(),
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -232,12 +205,12 @@ class _makePolicyRequestDialogState extends State<makePolicyRequestDialog> {
                     const SizedBox(height: 10),
 
                     TextFormField(
-                      controller: _notesontroller,
-                      maxLines: 5,
+                      controller: _messageController,
+                      maxLines: 1,
                       textAlign: TextAlign.right,
                       textDirection: TextDirection.rtl,
                       decoration: InputDecoration(
-                        hintText: 'ادخل  الملاحظات',
+                        hintText: 'Policy Name'.tr(),
                         hintStyle: const TextStyle(
                           color: _hintColor,
                           fontSize: 14,
@@ -263,11 +236,21 @@ class _makePolicyRequestDialogState extends State<makePolicyRequestDialog> {
                       validator: (value) {
                         return SmartValidator.validate(
                           value,
-                          fieldName: 'الملاحظات',
+                          fieldName: 'Policy Name'.tr(),
                           required: true,
                         );
                       },
                     ),
+                    const SizedBox(height: 10),
+                    // _buildField(
+                    //   label:'Select Template'.tr(),
+                    //   hint: "choose".tr(),
+                    //   controller: nameController,
+                    //   isRequired: true,
+                    //   isDropdown: true,
+                    //   items: ["عادي", "غير عادي"],
+                    // ),
+
 
                     const SizedBox(height: 24),
 
@@ -338,4 +321,145 @@ class _makePolicyRequestDialogState extends State<makePolicyRequestDialog> {
       ),
     );
   }
+
+  Widget _buildField({
+    required String label,
+    required String hint,
+    required TextEditingController controller,
+    IconData? suffixIcon,
+    bool isHighlighted = false,
+    bool isDropdown = false,
+    int maxLines = 1,
+    bool isRequired = false,
+    List<String>? items,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+
+          /// 🔴 Label + Star
+          Row(
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              if (isRequired)
+                const Text(
+                  " *",
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+            ],
+          ),
+
+          const SizedBox(height: 6),
+
+          /// 🔄 Dropdown or TextField
+          isDropdown
+              ? DropdownButtonFormField<String>(
+            value: controller.text.isEmpty ? null : controller.text,
+            items: items
+                ?.map(
+                  (item) =>
+                  DropdownMenuItem<String>(
+                    value: item,
+                    child: Text(item),
+                  ),
+            )
+                .toList(),
+            onChanged: (value) {
+              controller.text = value ?? '';
+            },
+            validator: (value) {
+              return SmartValidator.validate(
+                value,
+                fieldName: label,
+                required: isRequired,
+              );
+            },
+            decoration: InputDecoration(
+              hintText: hint,
+              filled: true,
+              fillColor: isHighlighted
+                  ? primaryOlive.withOpacity(0.08)
+                  : Colors.white,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 10,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(
+                  color: isHighlighted
+                      ? primaryOlive
+                      : Colors.grey.shade300,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: primaryOlive, width: 1.5),
+              ),
+            ),
+          )
+              : TextFormField(
+            controller: controller,
+            maxLines: maxLines,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            textAlign: isAr ? TextAlign.right : TextAlign.left,
+            validator: (value) {
+              return SmartValidator.validate(
+                value,
+                fieldName: label,
+                required: isRequired,
+              );
+            },
+            onChanged: (value) {
+              _formKey.currentState?.validate();
+            },
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: const TextStyle(
+                fontSize: 11,
+                color: Colors.grey,
+              ),
+              suffixIcon: suffixIcon != null
+                  ? Icon(suffixIcon, size: 18)
+                  : null,
+              filled: true,
+              fillColor: isHighlighted
+                  ? primaryOlive.withOpacity(0.08)
+                  : Colors.white,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 10,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(
+                  color: isHighlighted
+                      ? primaryOlive
+                      : Colors.grey.shade300,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: primaryOlive, width: 1.5),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 }
+
